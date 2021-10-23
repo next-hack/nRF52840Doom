@@ -1,0 +1,87 @@
+<!DOCTYPE CrossStudio_Project_File>
+<solution Name="Doom" target="8" version="2">
+  <configuration
+    Name="Debug"
+    c_preprocessor_definitions="DEBUG"
+    gcc_debugging_level="Level 3"
+    gcc_optimization_level="None" />
+  <configuration
+    Name="Release"
+    c_preprocessor_definitions="NDEBUG"
+    gcc_debugging_level="None"
+    gcc_omit_frame_pointer="Yes"
+    gcc_optimization_level="Level 1" />
+  <project Name="NRF52840_DOOM_KEYBOARD_ON_NRF51822">
+    <configuration
+      Name="Common"
+      arm_architecture="v6M"
+      arm_assembler_variant="gcc"
+      arm_core_type="Cortex-M0"
+      arm_endian="Little"
+      arm_fp_abi="Nonw"
+      arm_fpu_type=""
+      arm_keep_assembly="Yes"
+      arm_library_optimization="Small"
+      arm_linker_heap_size="0"
+      arm_linker_process_stack_size="0"
+      arm_linker_stack_size="1536"
+      arm_linker_variant="GNU"
+      arm_math_errno="No"
+      arm_simulator_memory_simulation_parameter="RX 00000000,00040000,FFFFFFFF;RWX 20000000,00004000,CDCDCDCD"
+      arm_target_device_name="nRF51822_xxAA"
+      arm_target_interface_type="SWD"
+      arm_use_builtins="Yes"
+      asm_generate_listing_file="Yes"
+      c_preprocessor_definitions="NRF51822_XXAA;NRF51_SERIES"
+      c_user_include_directories=".;$(ProjectDir)/cmsis/include/;$(ProjectDir)/mdk/;$(ProjectDir)/src/;$(ProjectDir)"
+      debug_enable_RTT="No"
+      debug_register_definition_file="$(ProjectDir)/mdk/nrf51.svd"
+      debug_target_connection="J-Link"
+      gcc_entry_point="Reset_Handler"
+      gcc_optimization_level="Level 3"
+      link_dependent_projects="Yes"
+      link_include_standard_libraries="Yes"
+      link_linker_script_file="$(ProjectDir)/nrf51822_next_hack_linker_script.ld"
+      link_time_optimization="No"
+      link_use_linker_script_file="Yes"
+      linker_output_format="hex"
+      linker_section_placement_file="$(ProjectDir)/flash_placement.xml"
+      linker_section_placements_segments="FLASH1 RX 0x00000000 0x00040000;RAM1 RWX 0x20000000 0x00004000"
+      post_build_command=""
+      project_directory=""
+      project_type="Executable"
+      speed="1000" />
+    <folder Name="Source Files">
+      <configuration Name="Common" filter="c;cpp;cxx;cc;h;s;asm;inc" />
+      <file file_name="src/main.c" />
+      <file file_name="src/printf.c" />
+      <file file_name="src/main.h" />
+    </folder>
+    <folder Name="System Files">
+      <file file_name="mdk/system_nrf51.c" />
+      <file file_name="mdk/gcc_startup_nrf51.S" />
+    </folder>
+    <configuration
+      Name="Debug"
+      arm_long_calls="No"
+      arm_unaligned_access="No"
+      gcc_optimization_level="Optimize For Size"
+      link_linker_script_file="nrf51822_next_hack_linker_script.ld"
+      link_use_linker_script_file="Yes"
+      linker_section_placement_file="$(ProjectDir)/flash_placement.xml" />
+    <configuration
+      Name="Simulator"
+      debug_target_connection="Simulator"
+      linker_post_build_command=""
+      post_build_command="" />
+    <folder Name="LinkeScript">
+      <file file_name="nrf51822_next_hack_linker_script.ld" />
+    </folder>
+  </project>
+  <configuration
+    Name="Common"
+    arm_fp_abi="None"
+    arm_fpu_type="None"
+    arm_use_builtins="Yes" />
+  <configuration Name="Simulator" />
+</solution>

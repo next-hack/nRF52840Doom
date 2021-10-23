@@ -1,0 +1,1 @@
+In bin\debug you will find the executable. You must copy it on the same directory as the gbadoom.wad.

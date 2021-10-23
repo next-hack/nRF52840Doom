@@ -1,0 +1,346 @@
+   1              	# 1 "C:\\Users\\PETN\\Google Drive\\NRF52840DoomKeyboardOnNRF51822\\mdk\\gcc_startup_nrf51.S"
+   2              	# 1 "<built-in>"
+   3              	# 1 "<command-line>"
+   4              	# 1 "C:\\Users\\PETN\\Google Drive\\NRF52840DoomKeyboardOnNRF51822\\mdk\\gcc_startup_nrf51.S"
+   5              	/*
+   6              	
+   7              	 
+   8              	
+   9              	Copyright (c) 2009-2020 ARM Limited. All rights reserved.
+  10              	
+  11              	
+  12              	
+  13              	    SPDX-License-Identifier: Apache-2.0
+  14              	
+  15              	
+  16              	
+  17              	Licensed under the Apache License, Version 2.0 (the License); you may
+  18              	
+  19              	not use this file except in compliance with the License.
+  20              	
+  21              	You may obtain a copy of the License at
+  22              	
+  23              	
+  24              	
+  25              	    www.apache.org/licenses/LICENSE-2.0
+  26              	
+  27              	
+  28              	
+  29              	Unless required by applicable law or agreed to in writing, software
+  30              	
+  31              	distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  32              	
+  33              	WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  34              	
+  35              	See the License for the specific language governing permissions and
+  36              	
+  37              	limitations under the License.
+  38              	
+  39              	
+  40              	
+  41              	NOTICE: This file has been modified by Nordic Semiconductor ASA.
+  42              	
+  43              	
+  44              	
+  45              	*/
+  46              	# 23 "C:\\Users\\PETN\\Google Drive\\NRF52840DoomKeyboardOnNRF51822\\mdk\\gcc_startup_nrf51.S"
+  47              	    .syntax unified
+  48              	    .arch armv6-m
+  49              	# 33 "C:\\Users\\PETN\\Google Drive\\NRF52840DoomKeyboardOnNRF51822\\mdk\\gcc_startup_nrf51.S"
+  50              	    .section .stack
+  51              	
+  52              	
+  53              	
+  54              	
+  55              	
+  56              	
+  57              	
+  58              	    .align 3
+  59              	    .equ Stack_Size, 2048
+  60              	
+  61              	    .globl __StackTop
+  62              	    .globl __StackLimit
+  63              	__StackLimit:
+  64 0000 00000000 	    .space Stack_Size
+  64      00000000 
+  64      00000000 
+  64      00000000 
+  64      00000000 
+  65              	    .size __StackLimit, . - __StackLimit
+  66              	__StackTop:
+  67              	    .size __StackTop, . - __StackTop
+  68              	
+  69              	    .section .heap
+  70              	    .align 3
+  71              	
+  72              	
+  73              	
+  74              	
+  75              	
+  76              	    .equ Heap_Size, 2048
+  77              	
+  78              	    .globl __HeapBase
+  79              	    .globl __HeapLimit
+  80              	__HeapBase:
+  81              	    .if Heap_Size
+  82 0000 00000000 	    .space Heap_Size
+  82      00000000 
+  82      00000000 
+  82      00000000 
+  82      00000000 
+  83              	    .endif
+  84              	    .size __HeapBase, . - __HeapBase
+  85              	__HeapLimit:
+  86              	    .size __HeapLimit, . - __HeapLimit
+  87              	
+  88              	    .section .isr_vector, "ax"
+  89              	    .align 2
+  90              	    .globl __isr_vector
+  91              	__isr_vector:
+  92 0000 00000000 	    .long __StackTop /* Top of Stack */
+  93 0004 00000000 	    .long Reset_Handler
+  94 0008 00000000 	    .long NMI_Handler
+  95 000c 00000000 	    .long HardFault_Handler
+  96 0010 00000000 	    .long 0 /*Reserved */
+  97 0014 00000000 	    .long 0 /*Reserved */
+  98 0018 00000000 	    .long 0 /*Reserved */
+  99 001c 00000000 	    .long 0 /*Reserved */
+ 100 0020 00000000 	    .long 0 /*Reserved */
+ 101 0024 00000000 	    .long 0 /*Reserved */
+ 102 0028 00000000 	    .long 0 /*Reserved */
+ 103 002c 00000000 	    .long SVC_Handler
+ 104 0030 00000000 	    .long 0 /*Reserved */
+ 105 0034 00000000 	    .long 0 /*Reserved */
+ 106 0038 00000000 	    .long PendSV_Handler
+ 107 003c 00000000 	    .long SysTick_Handler
+ 108              	
+ 109              	  /* External Interrupts */
+ 110 0040 00000000 	    .long POWER_CLOCK_IRQHandler
+ 111 0044 00000000 	    .long RADIO_IRQHandler
+ 112 0048 00000000 	    .long UART0_IRQHandler
+ 113 004c 00000000 	    .long SPI0_TWI0_IRQHandler
+ 114 0050 00000000 	    .long SPI1_TWI1_IRQHandler
+ 115 0054 00000000 	    .long 0 /*Reserved */
+ 116 0058 00000000 	    .long GPIOTE_IRQHandler
+ 117 005c 00000000 	    .long ADC_IRQHandler
+ 118 0060 00000000 	    .long TIMER0_IRQHandler
+ 119 0064 00000000 	    .long TIMER1_IRQHandler
+ 120 0068 00000000 	    .long TIMER2_IRQHandler
+ 121 006c 00000000 	    .long RTC0_IRQHandler
+ 122 0070 00000000 	    .long TEMP_IRQHandler
+ 123 0074 00000000 	    .long RNG_IRQHandler
+ 124 0078 00000000 	    .long ECB_IRQHandler
+ 125 007c 00000000 	    .long CCM_AAR_IRQHandler
+ 126 0080 00000000 	    .long WDT_IRQHandler
+ 127 0084 00000000 	    .long RTC1_IRQHandler
+ 128 0088 00000000 	    .long QDEC_IRQHandler
+ 129 008c 00000000 	    .long LPCOMP_IRQHandler
+ 130 0090 00000000 	    .long SWI0_IRQHandler
+ 131 0094 00000000 	    .long SWI1_IRQHandler
+ 132 0098 00000000 	    .long SWI2_IRQHandler
+ 133 009c 00000000 	    .long SWI3_IRQHandler
+ 134 00a0 00000000 	    .long SWI4_IRQHandler
+ 135 00a4 00000000 	    .long SWI5_IRQHandler
+ 136 00a8 00000000 	    .long 0 /*Reserved */
+ 137 00ac 00000000 	    .long 0 /*Reserved */
+ 138 00b0 00000000 	    .long 0 /*Reserved */
+ 139 00b4 00000000 	    .long 0 /*Reserved */
+ 140 00b8 00000000 	    .long 0 /*Reserved */
+ 141 00bc 00000000 	    .long 0 /*Reserved */
+ 142              	
+ 143              	    .size __isr_vector, . - __isr_vector
+ 144              	
+ 145              	/* Reset Handler */
+ 146              	
+ 147              	    .equ NRF_POWER_RAMON_ADDRESS, 0x40000524
+ 148              	    .equ NRF_POWER_RAMONB_ADDRESS, 0x40000554
+ 149              	    .equ NRF_POWER_RAMONx_RAMxON_ONMODE_Msk, 0x3
+ 150              	
+ 151              	    .text
+ 152              	    .thumb
+ 153              	    .thumb_func
+ 154              	    .align 1
+ 155              	    .globl Reset_Handler
+ 156              	    .type Reset_Handler, %function
+ 157              	Reset_Handler:
+ 158              	
+ 159 0000 0321     	    MOVS R1, #NRF_POWER_RAMONx_RAMxON_ONMODE_Msk
+ 160              	
+ 161 0002 0E48     	    LDR R0, =NRF_POWER_RAMON_ADDRESS
+ 162 0004 0268     	    LDR R2, [R0]
+ 163 0006 0A43     	    ORRS R2, R1
+ 164 0008 0260     	    STR R2, [R0]
+ 165              	
+ 166 000a 0D48     	    LDR R0, =NRF_POWER_RAMONB_ADDRESS
+ 167 000c 0268     	    LDR R2, [R0]
+ 168 000e 0A43     	    ORRS R2, R1
+ 169 0010 0260     	    STR R2, [R0]
+ 170              	
+ 171              	/* Loop to copy data from read only memory to RAM.
+ 172              	
+ 173              	 * The ranges of copy from/to are specified by following symbols:
+ 174              	
+ 175              	 *      __etext: LMA of start of the section to copy from. Usually end of text
+ 176              	
+ 177              	 *      __data_start__: VMA of start of the section to copy to.
+ 178              	
+ 179              	 *      __bss_start__: VMA of end of the section to copy to. Normally __data_end__ is used, but by 
+ 180              	
+ 181              	 *                    the user can add their own initialized data section before BSS section with t
+ 182              	
+ 183              	 *
+ 184              	
+ 185              	 * All addresses must be aligned to 4 bytes boundary.
+ 186              	
+ 187              	 */
+ 188              	# 164 "C:\\Users\\PETN\\Google Drive\\NRF52840DoomKeyboardOnNRF51822\\mdk\\gcc_startup_nrf51.S"
+ 189 0012 0C49     	    ldr r1, =__etext
+ 190 0014 0C4A     	    ldr r2, =__data_start__
+ 191 0016 0D4B     	    ldr r3, =__bss_start__
+ 192              	
+ 193 0018 9B1A     	    subs r3, r3, r2
+ 194 001a 03DD     	    ble .L_loop1_done
+ 195              	
+ 196              	.L_loop1:
+ 197 001c 043B     	    subs r3, r3, #4
+ 198 001e C858     	    ldr r0, [r1,r3]
+ 199 0020 D050     	    str r0, [r2,r3]
+ 200 0022 FBDC     	    bgt .L_loop1
+ 201              	
+ 202              	.L_loop1_done:
+ 203              	
+ 204              	
+ 205              	/* This part of work usually is done in C library startup code. Otherwise,
+ 206              	
+ 207              	 * define __STARTUP_CLEAR_BSS to enable it in this startup. This section
+ 208              	
+ 209              	 * clears the RAM where BSS data is located.
+ 210              	
+ 211              	 *
+ 212              	
+ 213              	 * The BSS section is specified by following symbols
+ 214              	
+ 215              	 *    __bss_start__: start of the BSS section.
+ 216              	
+ 217              	 *    __bss_end__: end of the BSS section.
+ 218              	
+ 219              	 *
+ 220              	
+ 221              	 * All addresses must be aligned to 4 bytes boundary.
+ 222              	
+ 223              	 */
+ 224              	# 192 "C:\\Users\\PETN\\Google Drive\\NRF52840DoomKeyboardOnNRF51822\\mdk\\gcc_startup_nrf51.S"
+ 225 0024 0949     	    ldr r1, =__bss_start__
+ 226 0026 0A4A     	    ldr r2, =__bss_end__
+ 227              	
+ 228 0028 0020     	    movs r0, 0
+ 229              	
+ 230 002a 521A     	    subs r2, r2, r1
+ 231 002c 02DD     	    ble .L_loop3_done
+ 232              	
+ 233              	.L_loop3:
+ 234 002e 043A     	    subs r2, r2, #4
+ 235 0030 8850     	    str r0, [r1, r2]
+ 236 0032 FCDC     	    bgt .L_loop3
+ 237              	
+ 238              	.L_loop3_done:
+ 239              	
+ 240              	
+ 241              	/* Execute SystemInit function. */
+ 242 0034 FFF7FEFF 	    bl SystemInit
+ 243              	
+ 244              	/* Call _start function provided by libraries.
+ 245              	
+ 246              	 * If those libraries are not accessible, define __START as your entry point.
+ 247              	
+ 248              	 */
+ 249              	
+ 250 0038 FFF7FEFF 	    bl main
+ 251              	
+ 252 003c 24050040 	    .pool
+ 252      54050040 
+ 252      00000000 
+ 252      00000000 
+ 252      00000000 
+ 253              	    .size Reset_Handler,.-Reset_Handler
+ 254              	
+ 255              	    .section ".text"
+ 256              	
+ 257              	
+ 258              	/* Dummy Exception Handlers (infinite loops which can be modified) */
+ 259              	
+ 260              	    .weak NMI_Handler
+ 261              	    .type NMI_Handler, %function
+ 262              	NMI_Handler:
+ 263 0054 FEE7     	    b .
+ 264              	    .size NMI_Handler, . - NMI_Handler
+ 265              	
+ 266              	
+ 267              	    .weak HardFault_Handler
+ 268              	    .type HardFault_Handler, %function
+ 269              	HardFault_Handler:
+ 270 0056 FEE7     	    b .
+ 271              	    .size HardFault_Handler, . - HardFault_Handler
+ 272              	
+ 273              	
+ 274              	    .weak SVC_Handler
+ 275              	    .type SVC_Handler, %function
+ 276              	SVC_Handler:
+ 277 0058 FEE7     	    b .
+ 278              	    .size SVC_Handler, . - SVC_Handler
+ 279              	
+ 280              	
+ 281              	    .weak PendSV_Handler
+ 282              	    .type PendSV_Handler, %function
+ 283              	PendSV_Handler:
+ 284 005a FEE7     	    b .
+ 285              	    .size PendSV_Handler, . - PendSV_Handler
+ 286              	
+ 287              	
+ 288              	    .weak SysTick_Handler
+ 289              	    .type SysTick_Handler, %function
+ 290              	SysTick_Handler:
+ 291 005c FEE7     	    b .
+ 292              	    .size SysTick_Handler, . - SysTick_Handler
+ 293              	
+ 294              	
+ 295              	/* IRQ Handlers */
+ 296              	
+ 297              	    .globl Default_Handler
+ 298              	    .type Default_Handler, %function
+ 299              	Default_Handler:
+ 300 005e FEE7     	    b .
+ 301              	    .size Default_Handler, . - Default_Handler
+ 302              	
+ 303              	    .macro IRQ handler
+ 304              	    .weak \handler
+ 305              	    .set \handler, Default_Handler
+ 306              	    .endm
+ 307              	
+ 308              	    IRQ POWER_CLOCK_IRQHandler
+ 309              	    IRQ RADIO_IRQHandler
+ 310              	    IRQ UART0_IRQHandler
+ 311              	    IRQ SPI0_TWI0_IRQHandler
+ 312              	    IRQ SPI1_TWI1_IRQHandler
+ 313              	    IRQ GPIOTE_IRQHandler
+ 314              	    IRQ ADC_IRQHandler
+ 315              	    IRQ TIMER0_IRQHandler
+ 316              	    IRQ TIMER1_IRQHandler
+ 317              	    IRQ TIMER2_IRQHandler
+ 318              	    IRQ RTC0_IRQHandler
+ 319              	    IRQ TEMP_IRQHandler
+ 320              	    IRQ RNG_IRQHandler
+ 321              	    IRQ ECB_IRQHandler
+ 322              	    IRQ CCM_AAR_IRQHandler
+ 323              	    IRQ WDT_IRQHandler
+ 324              	    IRQ RTC1_IRQHandler
+ 325              	    IRQ QDEC_IRQHandler
+ 326              	    IRQ LPCOMP_IRQHandler
+ 327              	    IRQ SWI0_IRQHandler
+ 328              	    IRQ SWI1_IRQHandler
+ 329              	    IRQ SWI2_IRQHandler
+ 330              	    IRQ SWI3_IRQHandler
+ 331              	    IRQ SWI4_IRQHandler
+ 332              	    IRQ SWI5_IRQHandler
+ 333              	
+ 334              	  .end
