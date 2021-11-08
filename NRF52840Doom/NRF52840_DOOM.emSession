@@ -4,9 +4,9 @@
  <Breakpoints groups="Breakpoints" active_group="Breakpoints">
   <BreakpointListItem trigger="Execute" line="0" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="0x1ac14" group="Breakpoints" type="Breakpoint" state="3" filename="../NRF52840Doom" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="Write" line="0" counter="0" hardwareBreakpoint="Any" isFunctionBreakpoint="false" action="Stop" expression="0x20029a5c" group="Breakpoints" type="Breakpoint" state="3" filename="../NRF52840Doom" useHWbreakpoint="true"/>
-  <BreakpointListItem trigger="" line="310" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="2" filename="src/keyboard.c" useHWbreakpoint="false"/>
-  <BreakpointListItem trigger="" line="2211" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="Doom/source/p_spec.c" useHWbreakpoint="false"/>
-  <BreakpointListItem trigger="" line="2214" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="2" filename="Doom/source/p_spec.c" useHWbreakpoint="false"/>
+  <BreakpointListItem trigger="" line="309" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="src/keyboard.c" useHWbreakpoint="false"/>
+  <BreakpointListItem trigger="" line="2212" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="Doom/source/p_spec.c" useHWbreakpoint="false"/>
+  <BreakpointListItem trigger="" line="2215" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="2" filename="Doom/source/p_spec.c" useHWbreakpoint="false"/>
   <Exceptions set="Reset;MemManage;UsageFault_Coprocessor;UsageFault_CheckingError;UsageFault_StateError;BusFault;ExceptionEntryReturnFault;HardFault"/>
  </Breakpoints>
  <ExecutionProfileWindow/>
@@ -68,7 +68,7 @@
    <Watchpoint expression="_g->bmapheight" name="_g->bmapheight" radix="-1" linenumber="0" filename="../NRF52840Doom"/>
    <Watchpoint expression="&amp;staticZone" name="&amp;staticZone" radix="-1" linenumber="0" filename="../NRF52840Doom"/>
    <Watchpoint expression="p_wad_immutable_flash_data" name="p_wad_immutable_flash_data" radix="-1" linenumber="133" filename="Doom/include/w_wad.h"/>
-   <Watchpoint expression="p_wad_level_flash_data" name="p_wad_level_flash_data" radix="-1" linenumber="0" filename=""/>
+   <Watchpoint expression="p_wad_level_flash_data" name="p_wad_level_flash_data" radix="-1" linenumber="0" filename="../NRF52840Doom"/>
   </Watches>
  </Watch1>
  <Watch2>
@@ -81,13 +81,17 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="61" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="Doom/source/am_map.c" selected="0" top="31" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="75" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="Doom/source/p_spec.c" selected="0" top="66" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="src/main.c" selected="0" top="250" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="31" y="45" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="src/main.h" selected="1" top="30" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="30" y="84" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="Doom/source/z_zone.c" selected="0" top="80" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="36" y="75" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="src/qspi.c" selected="0" top="20" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="76" y="48" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="Doom/source/m_random.c" selected="0" top="34" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="6" y="186" useTextEdit="1" openedFrom="C:/Users/PETN/Google Drive/NRF52840Doom/Doom/source/i_video.c" useBinaryEdit="0" left="0" path="src/graphics.c" selected="0" top="176" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="268" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="src/main.c" selected="0" top="13" codecName=""/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="36" y="46" useTextEdit="1" openedFrom="C:/Users/PETN/Google Drive/NRF52840Doom/src/graphics.c" useBinaryEdit="0" left="0" path="src/graphics.h" selected="0" top="37" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="259" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="src/main.h" selected="1" top="147" codecName=""/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="8" y="297" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="Doom/source/m_cheat.c" selected="0" top="274" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="368" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="Doom/source/d_main.c" selected="0" top="277" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="25" y="101" useTextEdit="1" openedFrom="C:/Users/PETN/Google Drive/NRF52840Doom/Doom/source/d_main.c" useBinaryEdit="0" left="0" path="Doom/source/d_client.c" selected="0" top="98" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="13" y="76" useTextEdit="1" openedFrom="C:/Users/PETN/Google Drive/NRF52840Doom/Doom/source/d_main.c" useBinaryEdit="0" left="0" path="Doom/source/i_main.c" selected="0" top="71" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="19" y="226" useTextEdit="1" openedFrom="C:/Users/PETN/Google Drive/NRF52840Doom/Doom/source/d_main.c" useBinaryEdit="0" left="0" path="Doom/source/i_video.c" selected="0" top="208" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="25" y="46" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="src/delay.h" selected="0" top="6" codecName=""/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="34" y="51" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="src/display.c" selected="0" top="30" codecName="Default"/>
  </Files>
  <ARMCrossStudioWindow activeProject="NRF52840_DOOM" fileDialogDefaultFilter="*.c;*.cpp;*.cxx;*.cc;*.h;*.hpp;*.hxx" autoConnectTarget="J-Link" buildConfiguration="Debug" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="" debugSearchPath="" autoConnectCapabilities="3711"/>
 </session>

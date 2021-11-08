@@ -1237,7 +1237,7 @@ FASTFUN static void R_DrawVisSprite(const vissprite_t *vis)
                 // calculate how many columns we should draw with the same clumn data.
                 do
                 {
-                    // caculate the new column
+                    // calculate the new column
                     newColindex = frac >> FRACBITS;
                     x++;
                     frac += vis->xiscale;

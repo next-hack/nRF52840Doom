@@ -76,33 +76,8 @@ void initGraphics()
     memset(&displayData, 0, sizeof(displayData));
     displayData.pPalette = (uint16_t * ) palette16;
     displayData.displayMode = dm_8bpp;
+    displayData.displayDmaLineBuffersSent = NUMBER_OF_DMA_LINES + 1;
     setDisplayPen(1,0);
-}
-void startDisplayRefresh(uint8_t bufferNumber)
-{
-    // we cannot write until the DMA hasn't finished.
-    // Note, that DMA typically finishes well before next frame.
-    // however, if you face a wall, cached in the internal flash, this might
-    // be the case...
-    while (displayData.dmaBusy)
-    {
-    }
-    displayData.dmaBusy = 1;
-    displayData.currentDisplayDmaLineBuffer = 0;
-    displayData.displayDmaLineBuffersSent = 0;
-    displayData.currentDmaFrameBuffer = displayData.displayFrameBuffer[bufferNumber];
-    fillNextDmaLineBuffer();
-    // enable shorts
-    NRF_SPIM3->EVENTS_STARTED = 0;
-    NRF_SPIM3->EVENTS_END = 0;
-    #if DISPLAY_SPIM_USES_SHORTS
-    NRF_SPIM3->SHORTS = SPIM_SHORTS_END_START_Enabled << SPIM_SHORTS_END_START_Pos; 
-    NRF_SPIM3->INTENSET = SPIM_INTENSET_STARTED_Msk;
-    #else
-        NRF_SPIM3->INTENSET = SPIM_INTENSET_STARTED_Msk | SPIM_INTENSET_END_Msk;
-    #endif
-    //
-    NRF_SPIM3->TASKS_START = 1;
 }
 //
 static uint8_t penColor = 1;
@@ -206,6 +181,42 @@ void displayPrintln(bool update, const char *format, ...)
     }
 }
 #pragma GCC optimize ("Ofast")  // we need to compile this code to be as fast as possible.
+void startDisplayRefresh(uint8_t bufferNumber)
+{
+    displayData.nextBufferIndex = bufferNumber;
+    //
+    uint8_t early = 0;
+    while (displayData.displayDmaLineBuffersSent < NUMBER_OF_DMA_LINES - 1)
+    {
+      early = 1;
+    }
+    if (early)
+    {
+        displayData.doNotDisableShorts = 1;
+    }
+    else
+    {
+        // normal mode
+        while (displayData.dmaBusy)
+        {
+        }
+        displayData.dmaBusy = 1;
+        displayData.displayDmaLineBuffersSent = 0;
+        displayData.currentDmaFrameBuffer = displayData.displayFrameBuffer[bufferNumber];
+        fillNextDmaLineBuffer();
+        // enable shorts
+        NRF_SPIM3->EVENTS_STARTED = 0;
+        NRF_SPIM3->EVENTS_END = 0;
+        #if DISPLAY_SPIM_USES_SHORTS
+            NRF_SPIM3->SHORTS = SPIM_SHORTS_END_START_Enabled << SPIM_SHORTS_END_START_Pos; 
+            NRF_SPIM3->INTENSET = SPIM_INTENSET_STARTED_Msk;
+        #else
+            NRF_SPIM3->INTENSET = SPIM_INTENSET_STARTED_Msk | SPIM_INTENSET_END_Msk;
+        #endif
+        //
+        NRF_SPIM3->TASKS_START = 1;
+    }
+}
 
 static inline void fillNextDmaLineBuffer()
 {
@@ -290,10 +301,22 @@ void SPIM3_IRQHandler(void)
         NRF_SPIM3->EVENTS_STARTED = 0; // clear flags
         if (displayData.displayDmaLineBuffersSent >= NUMBER_OF_DMA_LINES)
         {
-            // disable shorts.
-            displayData.displayDmaLineBuffersSent++;
-            NRF_SPIM3->SHORTS = 0;
-            NRF_SPIM3->INTENSET = SPIM_INTENSET_END_Msk;
+            if (!displayData.doNotDisableShorts)
+            {
+                // disable shorts.
+                displayData.displayDmaLineBuffersSent++;
+                NRF_SPIM3->SHORTS = 0;
+                NRF_SPIM3->INTENSET = SPIM_INTENSET_END_Msk;
+            }
+            else
+            {
+                displayData.doNotDisableShorts = 0;
+                //
+                displayData.currentDmaFrameBuffer = displayData.displayFrameBuffer[displayData.nextBufferIndex];
+                displayData.displayDmaLineBuffersSent = 0;
+                fillNextDmaLineBuffer();
+
+            }
         }
         else
         {

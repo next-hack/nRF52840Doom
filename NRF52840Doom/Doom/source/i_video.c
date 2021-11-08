@@ -112,8 +112,13 @@ void I_StartTic(void)
             gameKeyState |= 1 << KEYD_MENU;
         if (hwKeyState & KEY_CHGW)
             gameKeyState |= 1 << KEYD_CHGWDOWN;
+#if OLD_KEYMAP // it was not wise setting ALT with fire to trigger automap...
         if (hwKeyState & KEY_FIRE)
             gameKeyState |= 1 << KEYD_MAP1;
+#else
+        if (hwKeyState & KEY_FIRE)
+            gameKeyState |= 1 << KEYD_FIRE;
+#endif
         if (! (hwKeyState & (KEY_RIGHT | KEY_LEFT | KEY_USE | KEY_CHGW | KEY_FIRE)))
             gameKeyState |= 1 << KEYD_ALT;
     }
@@ -135,6 +140,11 @@ void I_StartTic(void)
         gameKeyState |= 1 << KEYD_UP;
     if (hwKeyState & KEY_DOWN)
         gameKeyState |= 1 << KEYD_DOWN;
+ #if !OLD_KEYMAP
+    // automap is now enabled when use and change weapon are pressed at the same time. 
+    if ((hwKeyState & (KEY_USE | KEY_CHGW)) == (KEY_USE | KEY_CHGW))
+        gameKeyState |= 1 << KEYD_MAP1;
+#endif
     // Get which keys have changed since last time
     uint16_t keys_changed = oldGameKeyState ^ gameKeyState;
 

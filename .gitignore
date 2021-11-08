@@ -1,6 +1,12 @@
 # Prerequisites
 *.d
 
+# Intermediate stuff
+NRF52840Doom/Output/Debug/Obj
+
+#segger stuff
+*.emSession
+
 # Object files
 *.o
 *.ko
@@ -48,3 +54,5 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+*.emSession
+NRF52840Doom/NRF52840_DOOM.emSession

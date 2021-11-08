@@ -49,6 +49,7 @@ void initDisplaySpi()
     // hack for those stupid boards not using NCS. Damn it.
     NRF_SPIM3->CONFIG = SPIM_CONFIG_CPHA_Msk | SPIM_CONFIG_CPOL_Msk;
 #endif
+   NRF_SPIM3->IFTIMING.CSNDUR = 0;
     // Enable and configure easy dma for SPIM03
     NRF_SPIM3->TXD.LIST = SPIM_TXD_LIST_LIST_ArrayList << SPIM_TXD_LIST_LIST_Pos;
     NRF_SPIM3->RXD.LIST = SPIM_RXD_LIST_LIST_Disabled << SPIM_RXD_LIST_LIST_Pos;
