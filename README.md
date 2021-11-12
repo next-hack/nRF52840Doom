@@ -42,9 +42,10 @@
 ## Controls:
 **Strafe:** alt + Left-Right
 
-**Automap:** alt + fire
+**Automap:** use + change weapon
 
 **Menu:** alt + use
+
 
 ## Hardware:
 The schematics of the prototype, Adafruit micro:bit port expander board + audio and wireless gamepad are in the hardware subdirectory.
@@ -56,4 +57,4 @@ The schematics of the prototype, Adafruit micro:bit port expander board + audio 
 - hardware: schematics.
 
 ## Building, developing, etc:
-See https://next-hack.com/
+See https://next-hack.com/index.php/2021/11/13/porting-doom-to-an-nrf52840-based-usb-bluetooth-le-dongle/

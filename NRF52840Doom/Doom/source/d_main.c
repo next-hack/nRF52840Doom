@@ -86,8 +86,7 @@
 #include "pwm_audio.h"
 #include "graphics.h"
 #include "main.h"
-
-//extern byte displayBuffer[];
+#include "delay.h"
 
 void GetFirstMap(int *ep, int *map); // Ty 08/29/98 - add "-warp x" functionality
 static void D_PageDrawer(void);
@@ -849,10 +848,10 @@ static void D_DoomMainSetup(void)
 
 void D_DoomMain(void)
 {
-    // debug;
-
     D_DoomMainSetup(); // CPhipps - setup out of main execution stack
-    // 
+    //
+    delay(100); // still have not figured why after WAD upload this has to be added: probably due to nvm programming.
+    //
     D_DoomLoop();  // never returns
 }
 

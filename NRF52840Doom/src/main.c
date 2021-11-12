@@ -289,7 +289,6 @@ void main(void)
     timerInit();
     //
     uartConfig();
-    delay(500);
     initGraphics();
     initDisplaySpi();
     DisplayInit();
@@ -298,19 +297,19 @@ void main(void)
     displayPrintln(1, "Doom port to nRF52840");
     displayPrintln(1, "by Nicola Wrachien (next-hack)");
     displayPrintln(1, "");
+    // measure refresh time!
     uint32_t oldTime = NRF_TIMER3->CC[0];
     startDisplayRefresh(0);
     oldTime = NRF_TIMER3->CC[0] - oldTime;
-
     displayPrintln(1, "Frame refresh time %d us!", oldTime);
     displayPrintln(1, "");
 #if MINEWDONGLE && DEBUG_MINEGW
     enableUsb();
 #endif
 #if KEYBOARD == RADIO_KEYBOARD
-    displayPrintln(1, "Make sure to turn on radio keyboard!");
+    displayPrintln(1, "Turn on the radio gamepad!");
 #endif
-    displayPrintln(1, "Press weapon-up & use & alt");
+    displayPrintln(1, "Press change weapon+use+alt");
     displayPrintln(1, "within 2s to start WAD upload!");
 
     // we need to init audio because it is required for the wireless keyboard.

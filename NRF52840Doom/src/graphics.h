@@ -43,9 +43,10 @@ typedef struct
     uint8_t workingBuffer;
     uint8_t displayMode;
     volatile uint8_t dmaBusy;
+#if NEW_DISPLAY_UPDATE_WAY
     volatile uint8_t doNotDisableShorts;
     volatile uint8_t nextBufferIndex;
-
+#endif
 } displayData_t;
 extern displayData_t displayData;
 void displayPrintf(int x, int y, const char * format, ...);
