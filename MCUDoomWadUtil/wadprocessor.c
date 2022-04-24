@@ -808,7 +808,10 @@ static void convertCompositeTextures(wadfile_t *wadfile)
         }
         maptexture_t *mtexture = (maptexture_t*) ((const uint8_t*) maptex + offset);
 
-        if (mtexture->patchcount < 2)
+        // 2022-04-19: removed check with patch < 2, as textures with 1 patches need to be addressed as well, as they might have different offsets.
+        // 2022-04-24: this screwed up  masked textures. Modified so that we only change textures with 2 patches or single patch with 0 offset
+        // FIXME: this is not  perfect solution anyway, as we might have some masked textures with offset. TO be checked.
+        if (mtexture->patchcount < 2 && mtexture->patches[0].originx == 0 && mtexture->patches[0].originy == 0)
             continue;       // we are interested only in composite textures.
         uint8_t columnData[256];    // this should be enough.
         size += mtexture->height * mtexture->width;

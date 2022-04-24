@@ -609,6 +609,7 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
     mobj_t *mo;
 
     target->flags &= ~(MF_SHOOTABLE | MF_FLOAT | MF_SKULLFLY );
+    demodbgprintf("KillMobj target type %d\r\n",target->type);
 
     if (target->type != MT_SKULL)
         target->flags &= ~MF_NOGRAVITY;
@@ -655,7 +656,7 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
     else
         P_SetMobjState(target, getMobjInfo(target)->deathstate);
 
-    target->tics -= P_Random() & 3;
+    target->tics -= P_Random(__FILE__, __LINE__, __FUNCTION__) & 3;
 
     if (target->tics < 1)
         target->tics = 1;
@@ -735,7 +736,7 @@ void P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, int damage)
         fixed_t thrust = damage * (FRACUNIT >> 3) * 100 / getMobjInfo(target)->mass;
 
         // make fall forwards sometimes
-        if (damage < 40 && damage > target->health && target->z - inflictor->z > 64 * FRACUNIT && (P_Random() & 1))
+        if (damage < 40 && damage > target->health && target->z - inflictor->z > 64 * FRACUNIT && (P_Random(__FILE__, __LINE__, __FUNCTION__) & 1))
         {
             ang += ANG180;
             thrust *= 4;
@@ -749,6 +750,7 @@ void P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, int damage)
     // player specific
     if (player)
     {
+        demodbgprintf("DamageMobj: health %d, damage %d, attacker x,y %d, %d\r\n", player->health, damage, source != NULL ? source->x : -1, source != NULL ? source->y : 0);
         // end of game hell hack
         if (getMobjSubsector(target)->sector->special == 11 && damage >= target->health)
             damage = target->health - 1;
@@ -792,46 +794,73 @@ void P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, int damage)
         return;
     }
 
-    /* If target is a player, set player's target to source,
-     * so that a friend can tell who's hurting a player
-     */
-    if (player)
-        //P_SetTarget(&target->target, source);
-        target->target_sptr = getShortPtr(source);
-    if (P_Random() < getMobjInfo(target)->painchance && !(target->flags & MF_SKULLFLY ))
-    { //killough 11/98: see below
-        justhit = true;
-
-        P_SetMobjState(target, getMobjInfo(target)->painstate);
-    }
-
-    target->reactiontime = 0;           // we're awake now...
-
-    /* killough 9/9/98: cleaned up, made more consistent: */
-
-    if (source && source != target && source->type != MT_VILE && (!target->threshold || target->type == MT_VILE))
+    if (!demo_compatibility)
     {
-        /* if not intent on another player, chase after this one
-         *
-         * killough 2/15/98: remember last enemy, to prevent
-         * sleeping early; 2/21/98: Place priority on players
-         * killough 9/9/98: cleaned up, made more consistent:
+        /* If target is a player, set player's target to source,
+         * so that a friend can tell who's hurting a player
          */
+        if (player)
+            //P_SetTarget(&target->target, source);
+            target->target_sptr = getShortPtr(source);
+        if (P_Random(__FILE__, __LINE__, __FUNCTION__) < getMobjInfo(target)->painchance && !(target->flags & MF_SKULLFLY ))
+        { //killough 11/98: see below
+            justhit = true;
 
-        if (0 == target->lastenemy_sptr || getLastEnemy(target)->health <= 0 || (!((target->flags ^ getLastEnemy(target)->flags) & MF_FRIEND ) && getTarget(target) != source)) // remember last enemy - killough
-        {
-            //P_SetTarget(getLastEnemy(target), target->target);
-            target->lastenemy_sptr = target->target_sptr;
+            P_SetMobjState(target, getMobjInfo(target)->painstate);
         }
-        // P_SetTarget(&target->target, source);       // killough 11/98
-        target->target_sptr = getShortPtr(source);
-        target->threshold = BASETHRESHOLD;
-        if (getMobjState(target) == &states[getMobjInfo(target)->spawnstate] && getMobjInfo(target)->seestate != S_NULL)
-            P_SetMobjState(target, getMobjInfo(target)->seestate);
-    }
 
-    /* killough 11/98: Don't attack a friend, unless hit by that friend.
-     * cph 2006/04/01 - implicitly this is only if mbf_features */
-    if (justhit && (getTarget(target) == source || !getTarget(target) || !(target->flags & getTarget(target)->flags & MF_FRIEND )))
-        target->flags |= MF_JUSTHIT;    // fight back!
+        target->reactiontime = 0;           // we're awake now...
+
+        /* killough 9/9/98: cleaned up, made more consistent: */
+
+        if (source && source != target && source->type != MT_VILE && (!target->threshold || target->type == MT_VILE))
+        {
+            /* if not intent on another player, chase after this one
+             *
+             * killough 2/15/98: remember last enemy, to prevent
+             * sleeping early; 2/21/98: Place priority on players
+             * killough 9/9/98: cleaned up, made more consistent:
+             */
+    #warning this can be removed
+            if (0 == target->lastenemy_sptr || getLastEnemy(target)->health <= 0 || (!((target->flags ^ getLastEnemy(target)->flags) & MF_FRIEND ) && getTarget(target) != source)) // remember last enemy - killough
+            {
+                //P_SetTarget(getLastEnemy(target), target->target);
+                target->lastenemy_sptr = target->target_sptr;
+            }
+            // P_SetTarget(&target->target, source);       // killough 11/98
+            target->target_sptr = getShortPtr(source);
+            target->threshold = BASETHRESHOLD;
+            if (getMobjState(target) == &states[getMobjInfo(target)->spawnstate] && getMobjInfo(target)->seestate != S_NULL)
+                P_SetMobjState(target, getMobjInfo(target)->seestate);
+        }
+
+        /* killough 11/98: Don't attack a friend, unless hit by that friend.
+         * cph 2006/04/01 - implicitly this is only if mbf_features */
+        {
+            if (justhit && (getTarget(target) == source || !getTarget(target) || !(target->flags & getTarget(target)->flags & MF_FRIEND )))
+                target->flags |= MF_JUSTHIT;    // fight back!
+        }
+    }
+    else
+    {
+        if (P_Random(__FILE__, __LINE__, __FUNCTION__) < getMobjInfo(target)->painchance && !(target->flags & MF_SKULLFLY ))
+        {
+            target->flags |= MF_JUSTHIT;	// fight back!
+
+            P_SetMobjState (target, getMobjInfo(target)->painstate);
+        }
+        target->reactiontime = 0;		// we're awake now...
+
+        if ( (!target->threshold || target->type == MT_VILE)
+         && source && source != target
+         && source->type != MT_VILE)
+        {
+            // if not intent on another player,
+            // chase after this one
+            target->target_sptr = getShortPtr(source);
+            target->threshold = BASETHRESHOLD;
+            if (getMobjState(target) == &states[getMobjInfo(target)->spawnstate] && getMobjInfo(target)->seestate != S_NULL)
+                P_SetMobjState(target, getMobjInfo(target)->seestate);
+        }
+    }
 }

@@ -88,7 +88,14 @@ unsigned int I_GetTime(void)
         return 0;
     }
     uint32_t diff = time - _g->basetime;
+ #define SPEED10X 0
+    #if SPEED10X
+    #warning speed10x
+    diff = diff / (100000 / TICRATE);
+
+    #else
     diff = diff / (1000000 / TICRATE);
+    #endif
     return diff;
 }
 

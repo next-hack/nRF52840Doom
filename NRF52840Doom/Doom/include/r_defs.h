@@ -255,13 +255,18 @@ typedef enum
 } r_flags;
 
 //Runtime mutable data for lines.
-#define VALIDCOUNT_MASK 0xFF
+#define VALIDCOUNT_MASK 0xFFff
+#if !USE_SEPARATE_R_VALIDCOUNT
+#define r_validcount validcount
+#endif
 typedef struct linedata_s
 {
 //    unsigned short validcount;        // if == validcount, already checked
 //    unsigned short r_validcount;      // cph: if == gametic, r_flags already done
-    uint32_t validcount :8;        // if == validcount, already checked
-    uint32_t r_validcount :8;      // cph: if == gametic, r_flags already done
+    uint32_t validcount :16;        // if == validcount, already checked
+#if USE_SEPARATE_R_VALIDCOUNT
+    uint32_t r_validcount :16;      // cph: if == gametic, r_flags already done
+#endif
     uint32_t special :12;
     uint32_t r_flags :3;
 } PACKEDATTR linedata_t;

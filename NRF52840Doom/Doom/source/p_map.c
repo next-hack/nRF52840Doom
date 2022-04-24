@@ -69,7 +69,14 @@
 //
 // PIT_StompThing
 //
-
+void checkInterceptIndex(int i)
+{
+    if (i >= MAXINTERCEPTS || i < 0)
+    {
+        printf("Intercept out of rance %d, blocking\r\n",i);
+        while (1);
+    }
+}
 boolean PIT_StompThing(mobj_t *thing)
 {
     fixed_t blockdist;
@@ -333,7 +340,7 @@ static boolean PIT_CheckThing(mobj_t *thing) // killough 3/26/98: make static
         // A flying skull is smacking something.
         // Determine damage amount, and the skull comes to a dead stop.
 
-        int damage = ((P_Random() % 8) + 1) * getMobjInfo(_g->tmthing)->damage;
+        int damage = ((P_Random(__FILE__, __LINE__, __FUNCTION__) % 8) + 1) * getMobjInfo(_g->tmthing)->damage;
 
         P_DamageMobj(thing, _g->tmthing, _g->tmthing, damage);
 
@@ -393,7 +400,7 @@ static boolean PIT_CheckThing(mobj_t *thing) // killough 3/26/98: make static
 
         // damage / explode
 
-        damage = ((P_Random() % 8) + 1) * getMobjInfo(_g->tmthing)->damage;
+        damage = ((P_Random(__FILE__, __LINE__, __FUNCTION__) % 8) + 1) * getMobjInfo(_g->tmthing)->damage;
         P_DamageMobj(thing, _g->tmthing, getTarget(_g->tmthing), damage);
 
         // don't traverse any more
@@ -415,9 +422,14 @@ static boolean PIT_CheckThing(mobj_t *thing) // killough 3/26/98: make static
     // despite another solid thing being in the way.
     // killough 4/11/98: Treat no-clipping things as not blocking
     // ...but not in demo_compatibility mode
-
-    return !(thing->flags & MF_SOLID ) || (((thing->flags & MF_NOCLIP ) || !(_g->tmthing->flags & MF_SOLID )));
-
+    // e6y
+    // Correction of wrong return value with demo_compatibility.
+    // There is no more synch on http://www.doomworld.com/sda/dwdemo/w303-115.zip
+    // (with correction in setMobjInfoValue)
+    if (demo_compatibility)
+        return !(thing->flags & MF_SOLID);
+    else
+        return !(thing->flags & MF_SOLID ) || (((thing->flags & MF_NOCLIP ) || !(_g->tmthing->flags & MF_SOLID )));
     // return !(thing->flags & MF_SOLID);   // old code -- killough
 }
 
@@ -521,7 +533,7 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
 
     // Whether object can get out of a sticky situation:
     _g->tmunstuck = !(thing->flags & MF_STATIC) && getMobjPlayer(thing) && /* only players */
-    getMobjPlayer(thing)->mo == thing; /* not under old demos */
+    getMobjPlayer(thing)->mo == thing && !demo_compatibility; /* not under old demos */
     // The base floor / ceiling is from the subsector
     // that contains the point.
     // Any contacted lines the step closer together
@@ -581,36 +593,61 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean dropoff) // killo
     if (!P_CheckPosition(thing, x, y))
         return false;   // solid wall or thing
 
-    if (!(thing->flags & MF_NOCLIP ))
+    if (demo_compatibility)
     {
-        // killough 7/26/98: reformatted slightly
-        // killough 8/1/98: Possibly allow escape if otherwise stuck
-
-        if (_g->tmceilingz - _g->tmfloorz < getMobjHeight(thing) || // doesn't fit
-        // mobj must lower to fit
-        (_g->floatok = true, !(thing->flags & MF_TELEPORT ) && _g->tmceilingz - thing->z < getMobjHeight(thing)) ||
-        // too big a step up
-        (!(thing->flags & MF_TELEPORT ) && _g->tmfloorz - thing->z > 24 * FRACUNIT))
-            return _g->tmunstuck && !(_g->ceilingline && untouched(_g->ceilingline)) && !(_g->floorline && untouched(_g->floorline));
-
-        /* killough 3/15/98: Allow certain objects to drop off
-         * killough 7/24/98, 8/1/98:
-         * Prevent monsters from getting stuck hanging off ledges
-         * killough 10/98: Allow dropoffs in controlled circumstances
-         * killough 11/98: Improve symmetry of clipping on stairs
-         */
-
-        if (!(thing->flags & (MF_DROPOFF | MF_FLOAT )))
+        if ( !(thing->flags & MF_NOCLIP) )
         {
-            if (!dropoff || (dropoff == 2 &&  // large jump down (e.g. dogs)
-            (_g->tmfloorz - _g->tmdropoffz > 128 * FRACUNIT || !getTarget(thing) || getTarget(thing)->z > _g->tmdropoffz)))
+            if (_g->tmceilingz - _g->tmfloorz < getMobjHeight(thing))
+                return false;	// doesn't fit
+
+            _g->floatok = true;
+
+            if ( !(thing->flags & MF_TELEPORT)
+                 && _g->tmceilingz - thing->z < getMobjHeight(thing))
+                return false;	// mobj must lower itself to fit
+
+            if ( !(thing->flags & MF_TELEPORT)
+                 && _g->tmfloorz - thing->z > 24*FRACUNIT )
+                return false;	// too big a step up
+
+            if ( !(thing->flags & (MF_DROPOFF|MF_FLOAT))
+                 && _g->tmfloorz - _g->tmdropoffz > 24*FRACUNIT )
+                return false;	// don't stand over a dropoff
+        }
+    }
+    else
+    {
+        if (!(thing->flags & MF_NOCLIP ))
+        {
+            // killough 7/26/98: reformatted slightly
+            // killough 8/1/98: Possibly allow escape if otherwise stuck
+
+            if (_g->tmceilingz - _g->tmfloorz < getMobjHeight(thing) || // doesn't fit
+            // mobj must lower to fit
+            (_g->floatok = true, !(thing->flags & MF_TELEPORT ) && _g->tmceilingz - thing->z < getMobjHeight(thing)) ||
+            // too big a step up
+            (!(thing->flags & MF_TELEPORT ) && _g->tmfloorz - thing->z > 24 * FRACUNIT))
+                return _g->tmunstuck && !(_g->ceilingline && untouched(_g->ceilingline)) && !(_g->floorline && untouched(_g->floorline));
+
+            /* killough 3/15/98: Allow certain objects to drop off
+             * killough 7/24/98, 8/1/98:
+             * Prevent monsters from getting stuck hanging off ledges
+             * killough 10/98: Allow dropoffs in controlled circumstances
+             * killough 11/98: Improve symmetry of clipping on stairs
+             */
+
+            if (!(thing->flags & (MF_DROPOFF | MF_FLOAT )))
             {
-                if (_g->tmfloorz - _g->tmdropoffz > 24 * FRACUNIT)
-                    return false;
-            }
-            else
-            { /* dropoff allowed -- check for whether it fell more than 24 */
-                _g->felldown = !(thing->flags & MF_NOGRAVITY ) && thing->z - _g->tmfloorz > 24 * FRACUNIT;
+                if (!dropoff || (dropoff == 2 &&  // large jump down (e.g. dogs)
+                (_g->tmfloorz - _g->tmdropoffz > 128 * FRACUNIT || !getTarget(thing) || getTarget(thing)->z > _g->tmdropoffz)))
+                {
+                    if (_g->tmfloorz - _g->tmdropoffz > 24 * FRACUNIT)
+                        return false;
+                }
+                else
+                { /* dropoff allowed -- check for whether it fell more than 24 */
+                    _g->felldown = !(thing->flags & MF_NOGRAVITY ) && thing->z - _g->tmfloorz > 24 * FRACUNIT;
+                }
             }
         }
     }
@@ -759,8 +796,8 @@ void P_HitSlideLine(const line_t *ld)
     // killough 3/2/98:
     // The moveangle+=10 breaks v1.9 demo compatibility in
     // some demos, so it needs demo_compatibility switch.
-
-    moveangle += 10; // prevents sudden path reversal due to        // phares
+    if (!demo_compatibility)
+        moveangle += 10; // prevents sudden path reversal due to        // phares
     // rounding error                              //   |
     deltaangle = moveangle - lineangle;                                 //   V
     movelen = P_AproxDistance(_g->tmxmove, _g->tmymove);
@@ -787,6 +824,8 @@ boolean PTR_SlideTraverse(intercept_t *in)
 {
     const line_t *li;
     int index = (int) (in - intercepts);
+    checkInterceptIndex(index);
+
     boolean isaline = interceptIsALine[index];
     //if (!in->isaline)
     if (!isaline)
@@ -969,6 +1008,7 @@ boolean PTR_AimTraverse(intercept_t *in)
     fixed_t thingbottomslope;
     fixed_t dist;
     int index = (int) (in - intercepts);
+        checkInterceptIndex(index);
     boolean isaline = interceptIsALine[index];
     //if (in->isaline)
     if (isaline)
@@ -1069,6 +1109,7 @@ boolean PTR_ShootTraverse(intercept_t *in)
     fixed_t thingtopslope;
     fixed_t thingbottomslope;
     int index = (int) (in - intercepts);
+        checkInterceptIndex(index);
     boolean isaline = interceptIsALine[index];
     //if (in->isaline)
     if (isaline)
@@ -1084,8 +1125,15 @@ boolean PTR_ShootTraverse(intercept_t *in)
             dist = FixedMul(_g->attackrange, in->frac);
 
             // killough 11/98: simplify
-
-            if ((LN_FRONTSECTOR(li)->floorheight == LN_BACKSECTOR(li)->floorheight || (slope = FixedDiv(_g->openbottom - _g->shootz, dist)) <= _g->aimslope) && (LN_FRONTSECTOR(li)->ceilingheight == LN_BACKSECTOR(li)->ceilingheight || (slope = FixedDiv(_g->opentop - _g->shootz, dist)) >= _g->aimslope))
+           // e6y: emulation of missed back side on two-sided lines.
+            // backsector can be NULL if overrun_missedbackside_emulate is 1
+            if (!LN_BACKSECTOR(li))
+            {
+              if ((slope = FixedDiv(_g->openbottom - _g->shootz , dist)) <= _g->aimslope &&
+                  (slope = FixedDiv(_g->opentop - _g->shootz , dist)) >= _g->aimslope)
+                return true;      // shot continues
+            }
+            else if ((LN_FRONTSECTOR(li)->floorheight == LN_BACKSECTOR(li)->floorheight || (slope = FixedDiv(_g->openbottom - _g->shootz, dist)) <= _g->aimslope) && (LN_FRONTSECTOR(li)->ceilingheight == LN_BACKSECTOR(li)->ceilingheight || (slope = FixedDiv(_g->opentop - _g->shootz, dist)) >= _g->aimslope))
                 return true;      // shot continues
         }
 
@@ -1111,7 +1159,7 @@ boolean PTR_ShootTraverse(intercept_t *in)
                 // fix bullet-eaters -- killough:
                 // WARNING: Almost all demos will lose sync without this
                 // demo_compatibility flag check!!! killough 1/18/98
-                if (LN_BACKSECTOR(li)->ceilingheight < z)
+                if (demo_compatibility || LN_BACKSECTOR(li)->ceilingheight < z)
                     return false;
         }
 
@@ -1185,10 +1233,16 @@ fixed_t P_AimLineAttack(mobj_t *t1, angle_t angle, fixed_t distance, uint_64_t m
     _g->shootz = t1->z + (getMobjHeight(t1) >> 1) + 8 * FRACUNIT;
 
     // can't shoot outside view angles
-
-    _g->topslope = 100 * FRACUNIT / SCREENHEIGHT;
-    _g->bottomslope = -100 * FRACUNIT / SCREENHEIGHT;
-
+    if (demo_compatibility) // nexthack: demo_compatibilty
+    {
+        _g->topslope = 100 * FRACUNIT / 160;       
+        _g->bottomslope = -100 * FRACUNIT / 160;
+    }
+    else
+    {
+        _g->topslope = (SCREENHEIGHT / 2) * FRACUNIT / (SCREENWIDTH / 2);     
+        _g->bottomslope = -(SCREENHEIGHT / 2) * FRACUNIT / (SCREENWIDTH / 2);
+    }
     _g->attackrange = distance;
     _g->linetarget = NULL;
 
@@ -1469,10 +1523,10 @@ boolean PIT_ChangeSector(mobj_t *thing)
         mo = P_SpawnMobj(thing->x, thing->y, thing->z + getMobjHeight(thing) / 2, MT_BLOOD);
 
         /* killough 8/10/98: remove dependence on order of evaluation */
-        t = P_Random();
-        mo->momx = (t - P_Random()) << 12;
-        t = P_Random();
-        mo->momy = (t - P_Random()) << 12;
+        t = P_Random(__FILE__, __LINE__, __FUNCTION__);
+        mo->momx = (t - P_Random(__FILE__, __LINE__, __FUNCTION__)) << 12;
+        t = P_Random(__FILE__, __LINE__, __FUNCTION__);
+        mo->momy = (t - P_Random(__FILE__, __LINE__, __FUNCTION__)) << 12;
     }
 
     // keep checking (crush other things)

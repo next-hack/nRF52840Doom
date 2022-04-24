@@ -560,7 +560,7 @@ int EV_DoGenLift(const line_t *line)
                 plat->high = P_FindHighestFloorSurrounding(sec);
                 if (plat->high < sec->floorheight)
                     plat->high = sec->floorheight;
-                plat->status = P_Random() & 1;
+                plat->status = P_Random(__FILE__, __LINE__, __FUNCTION__) & 1;
                 break;
             default:
                 break;

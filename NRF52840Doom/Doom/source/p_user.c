@@ -168,7 +168,32 @@ void P_CalcHeight(player_t *player)
 // Adds momentum if the player is not in the air
 //
 // killough 10/98: simplified
+#if 0
+void P_MovePlayer (player_t* player)
+{
+    ticcmd_t*		cmd;
 
+    cmd = &player->cmd;
+
+    player->mo->angle += (cmd->angleturn<<FRACBITS);
+
+    // Do not let the player control movement
+    //  if not onground.
+    _g->onground = (player->mo->z <= player->mo->floorz);
+
+    if (cmd->forwardmove && _g->onground)
+	P_Thrust (player, player->mo->angle, cmd->forwardmove*2048);
+
+    if (cmd->sidemove && _g->onground)
+	P_Thrust (player, player->mo->angle-ANG90, cmd->sidemove*2048);
+
+    if ( (cmd->forwardmove || cmd->sidemove)
+	 && getMobjState(player->mo) == &states[S_PLAY] )
+    {
+        P_SetMobjState (player->mo, S_PLAY_RUN1);
+    }
+}
+#else
 static void P_MovePlayer(player_t *player)
 {
     ticcmd_t *cmd = &player->cmd;
@@ -209,6 +234,7 @@ static void P_MovePlayer(player_t *player)
     }
 }
 
+#endif
 #define ANG5 (ANG90/18)
 
 //

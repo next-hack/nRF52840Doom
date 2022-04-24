@@ -303,7 +303,7 @@ int EV_DoPlat(const line_t *line, plattype_e type, int amount)
                     plat->high = sec->floorheight;
 
                 plat->wait = 35 * PLATWAIT;
-                plat->status = P_Random() & 1;
+                plat->status = P_Random(__FILE__, __LINE__, __FUNCTION__) & 1;
 
                 S_StartSound2(&sec->soundorg, sfx_pstart);
                 break;

@@ -54,7 +54,7 @@
 int M_Random(void);
 
 // As M_Random, but used only by the play simulation.
-int P_Random(void);
+int P_Random(const char *, int, const char *);
 
 // Fix randoms for demos.
 void M_ClearRandom(void);

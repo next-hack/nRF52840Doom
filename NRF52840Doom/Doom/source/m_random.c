@@ -70,9 +70,18 @@ static const unsigned char rndtable[256] =
     120, 163, 236, 249
 };
 // Which one is deterministic?
-int P_Random(void)
+int P_Random(const char *file, int line, const char *func)
 {
     _g->prndindex = (_g->prndindex + 1) & 0xff;
+    if (_g->gametic >= MIN_DEMO_GAMETIC_TO_PRINT)
+    {
+        // get only last path
+        int l = strlen(file);
+        file += l - 1;
+        while (*file != '\\')
+            file--;
+        demodbgprintf ("File %s, Line %d, func %s MR %x\r\n", file, line, func, _g->prndindex);
+    }
     return rndtable[_g->prndindex];
 }
 

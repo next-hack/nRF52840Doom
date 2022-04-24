@@ -78,7 +78,7 @@ void P_ExplodeMissile(mobj_t *mo)
 
     P_SetMobjState(mo, mobjinfo[mo->type].deathstate);
 
-    mo->tics -= P_Random() & 3;
+    mo->tics -= P_Random(__FILE__, __LINE__, __FUNCTION__) & 3;
 
     if (mo->tics < 1)
         mo->tics = 1;
@@ -141,7 +141,7 @@ void P_XYMovement(mobj_t *mo)
         // to pass through walls.
         // CPhipps - compatibility optioned
 
-        if (xmove > MAXMOVE / 2 || ymove > MAXMOVE / 2 || ((xmove < -MAXMOVE / 2 || ymove < -MAXMOVE / 2)))
+        if (xmove > MAXMOVE / 2 || ymove > MAXMOVE / 2 || (!demo_compatibility) && ((xmove < -MAXMOVE / 2 || ymove < -MAXMOVE / 2)))
         {
             ptryx = mo->x + xmove / 2;
             ptryy = mo->y + ymove / 2;
@@ -175,7 +175,8 @@ void P_XYMovement(mobj_t *mo)
 
                         if (ceilingBackSector && ceilingBackSector->ceilingpic == _g->skyflatnum)
                         {
-                            if (mo->z > ceilingBackSector->ceilingheight)
+                            if (demo_compatibility ||  // killough
+                            mo->z > ceilingBackSector->ceilingheight)
                             {
                                 // Hack to prevent missiles exploding
                                 // against the sky.
@@ -547,6 +548,7 @@ mobj_t* P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
     if (_g->gameskill != sk_nightmare)
         mobj->reactiontime = info->reactiontime;
 
+    mobj->lastlook = P_Random (__FILE__,__LINE__, __FUNCTION__) % MAXPLAYERS;
     // do not set the state with P_SetMobjState,
     // because action routines can not be called yet
 
@@ -612,13 +614,14 @@ static_mobj_t* P_SpawnStaticMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t typ
 
     //mobj->state  = st;
     mobj->state_idx = info->spawnstate;
-    //mobj->tics   = st->tics;
+    mobj->tics   = st->tics;
     mobj->sprite = st->sprite;
     mobj->frame = st->frame;
     //mobj->touching_sectorlist = NULL; // NULL head of sector list // phares 3/13/98
     mobj->touching_sectorlist_sptr = 0;
     // set subsector and/or block links
-
+    mobj->lastlook = P_Random (__FILE__,__LINE__, __FUNCTION__) % MAXPLAYERS; // only to call random for compatibiltiy
+    //
     P_SetThingPosition((mobj_t*) mobj);
 
 //  mobj->dropoffz =           /* killough 11/98: for tracking dropoffs */
@@ -924,8 +927,8 @@ void P_SpawnMapThing(const mapthing_t *mthing)
         z = ONFLOORZ;
     mobj = P_SpawnMobj(x, y, z, i);
     //mobj->spawnpoint = *mthing;
-    if (!(mobj->flags & MF_STATIC) && mobj->tics > 0)
-        mobj->tics = 1 + (P_Random() % mobj->tics);
+    if (mobj->tics > 0)
+        mobj->tics = 1 + (P_Random(__FILE__, __LINE__, __FUNCTION__) % mobj->tics);
 
     if (!(mobj->flags & MF_FRIEND ) && (options & MTF_FRIEND))
     {
@@ -955,12 +958,12 @@ void P_SpawnPuff(fixed_t x, fixed_t y, fixed_t z)
 {
     mobj_t *th;
     // killough 5/5/98: remove dependence on order of evaluation:
-    int t = P_Random();
-    z += (t - P_Random()) << 10;
+    int t = P_Random(__FILE__, __LINE__, __FUNCTION__);
+    z += (t - P_Random(__FILE__, __LINE__, __FUNCTION__)) << 10;
 
     th = P_SpawnMobj(x, y, z, MT_PUFF);
     th->momz = FRACUNIT;
-    th->tics -= P_Random() & 3;
+    th->tics -= P_Random(__FILE__, __LINE__, __FUNCTION__) & 3;
 
     if (th->tics < 1)
         th->tics = 1;
@@ -978,11 +981,11 @@ void P_SpawnBlood(fixed_t x, fixed_t y, fixed_t z, int damage)
 {
     mobj_t *th;
     // killough 5/5/98: remove dependence on order of evaluation:
-    int t = P_Random();
-    z += (t - P_Random()) << 10;
+    int t = P_Random(__FILE__, __LINE__, __FUNCTION__);
+    z += (t - P_Random(__FILE__, __LINE__, __FUNCTION__)) << 10;
     th = P_SpawnMobj(x, y, z, MT_BLOOD);
     th->momz = FRACUNIT * 2;
-    th->tics -= P_Random() & 3;
+    th->tics -= P_Random(__FILE__, __LINE__, __FUNCTION__) & 3;
 
     if (th->tics < 1)
         th->tics = 1;
@@ -1001,7 +1004,7 @@ void P_SpawnBlood(fixed_t x, fixed_t y, fixed_t z, int damage)
 
 void P_CheckMissileSpawn(mobj_t *th)
 {
-    th->tics -= P_Random() & 3;
+    th->tics -= P_Random(__FILE__, __LINE__, __FUNCTION__) & 3;
     if (th->tics < 1)
         th->tics = 1;
 
@@ -1045,8 +1048,8 @@ mobj_t* P_SpawnMissile(mobj_t *source, mobj_t *dest, mobjtype_t type)
 
     if (dest->flags & MF_SHADOW)
     {  // killough 5/5/98: remove dependence on order of evaluation:
-        int t = P_Random();
-        an += (t - P_Random()) << 20;
+        int t = P_Random(__FILE__, __LINE__, __FUNCTION__);
+        an += (t - P_Random(__FILE__, __LINE__, __FUNCTION__)) << 20;
     }
 
     th->angle = an;

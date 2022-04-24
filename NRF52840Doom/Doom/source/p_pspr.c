@@ -42,6 +42,7 @@
 #include "s_sound.h"
 #include "sounds.h"
 #include "d_event.h"
+#include "lprintf.h"
 
 #include "global_data.h"
 
@@ -116,7 +117,7 @@ static void P_BringUpWeapon(player_t *player)
     player->pendingweapon = wp_nochange;
     // killough 12/98: prevent pistol from starting visibly at bottom of screen:
     player->psprites[ps_weapon].sy =
-    WEAPONBOTTOM + FRACUNIT * 2;
+    WEAPONBOTTOM; // next-hack: this causes demo desync + FRACUNIT * 2;
 
     P_SetPsprite(player, ps_weapon, newstate);
 }
@@ -392,6 +393,64 @@ boolean P_CheckAmmo(player_t *player)
     if (ammo == am_noammo || player->ammo[ammo] >= count)
         return true;
 
+    if (demo_compatibility) // next-hack added for compatibility with demos
+    {
+        // Out of ammo, pick a weapon to change to.
+        // Preferences are set here.
+        do
+        {
+            if (player->weaponowned[wp_plasma]
+                && player->ammo[am_cell]
+                && (_g->gamemode != shareware) )
+            {
+                player->pendingweapon = wp_plasma;
+            }
+            else if (player->weaponowned[wp_supershotgun]
+                 && player->ammo[am_shell]>2
+                 && (_g->gamemode == commercial) )
+            {
+                player->pendingweapon = wp_supershotgun;
+            }
+            else if (player->weaponowned[wp_chaingun]
+                 && player->ammo[am_clip])
+            {
+                player->pendingweapon = wp_chaingun;
+            }
+            else if (player->weaponowned[wp_shotgun]
+                 && player->ammo[am_shell])
+            {
+                player->pendingweapon = wp_shotgun;
+            }
+            else if (player->ammo[am_clip])
+            {
+                player->pendingweapon = wp_pistol;
+            }
+            else if (player->weaponowned[wp_chainsaw])
+            {
+                player->pendingweapon = wp_chainsaw;
+            }
+            else if (player->weaponowned[wp_missile]
+                 && player->ammo[am_misl])
+            {
+                player->pendingweapon = wp_missile;
+            }
+            else if (player->weaponowned[wp_bfg]
+                 && player->ammo[am_cell]>40
+                 && (_g->gamemode != shareware) )
+            {
+                player->pendingweapon = wp_bfg;
+            }
+            else
+            {
+                // If everything fails.
+                player->pendingweapon = wp_fist;
+            }
+        } while (player->pendingweapon == wp_nochange);
+
+        // Now set appropriate weapon overlay.
+        P_SetPsprite (player, ps_weapon,  weaponinfo[player->readyweapon].downstate);
+
+    }
     return false;
 }
 
@@ -555,7 +614,7 @@ void A_Raise(player_t *player, pspdef_t *psp)
     statenum_t newstate;
 
     psp->sy -= RAISESPEED;
-
+    demodbgprintf("Raise: %x\r\n", psp->sy);
     if (psp->sy > WEAPONTOP)
         return;
 
@@ -603,7 +662,7 @@ void A_GunFlash(player_t *player, pspdef_t *psp)
 void A_Punch(player_t *player, pspdef_t *psp)
 {
     angle_t angle;
-    int t, slope, damage = (P_Random() % 10 + 1) << 1;
+    int t, slope, damage = (P_Random(__FILE__, __LINE__, __FUNCTION__) % 10 + 1) << 1;
 
     if (player->powers[pw_strength])
         damage *= 10;
@@ -611,8 +670,8 @@ void A_Punch(player_t *player, pspdef_t *psp)
     angle = player->mo->angle;
 
     // killough 5/5/98: remove dependence on order of evaluation:
-    t = P_Random();
-    angle += (t - P_Random()) << 18;
+    t = P_Random(__FILE__, __LINE__, __FUNCTION__);
+    angle += (t - P_Random(__FILE__, __LINE__, __FUNCTION__)) << 18;
 
     /* killough 8/2/98: make autoaiming prefer enemies */
     if ((slope = P_AimLineAttack(player->mo, angle, MELEERANGE, MF_FRIEND), !_g->linetarget))
@@ -636,11 +695,11 @@ void A_Punch(player_t *player, pspdef_t *psp)
 
 void A_Saw(player_t *player, pspdef_t *psp)
 {
-    int slope, damage = 2 * (P_Random() % 10 + 1);
+    int slope, damage = 2 * (P_Random(__FILE__, __LINE__, __FUNCTION__) % 10 + 1);
     angle_t angle = player->mo->angle;
     // killough 5/5/98: remove dependence on order of evaluation:
-    int t = P_Random();
-    angle += (t - P_Random()) << 18;
+    int t = P_Random(__FILE__, __LINE__, __FUNCTION__);
+    angle += (t - P_Random(__FILE__, __LINE__, __FUNCTION__)) << 18;
 
     /* Use meleerange + 1 so that the puff doesn't skip the flash
      * killough 8/2/98: make autoaiming prefer enemies */
@@ -708,7 +767,7 @@ void A_FirePlasma(player_t *player, pspdef_t *psp)
     S_StartSound(player->mo, sfx_plasma);
     player->ammo[weaponinfo[player->readyweapon].ammo]--;
 
-    A_FireSomething(player, P_Random() & 1);              // phares
+    A_FireSomething(player, P_Random(__FILE__, __LINE__, __FUNCTION__) & 1);              // phares
     P_SpawnPlayerMissile(player->mo, MT_PLASMA);
 }
 
@@ -740,13 +799,13 @@ static void P_BulletSlope(mobj_t *mo)
 
 static void P_GunShot(mobj_t *mo, boolean accurate)
 {
-    int damage = 5 * (P_Random() % 3 + 1);
+    int damage = 5 * (P_Random(__FILE__, __LINE__, __FUNCTION__) % 3 + 1);
     angle_t angle = mo->angle;
 
     if (!accurate)
     {  // killough 5/5/98: remove dependence on order of evaluation:
-        int t = P_Random();
-        angle += (t - P_Random()) << 18;
+        int t = P_Random(__FILE__, __LINE__, __FUNCTION__);
+        angle += (t - P_Random(__FILE__, __LINE__, __FUNCTION__)) << 18;
     }
 
     P_LineAttack(mo, angle, MISSILERANGE, _g->bulletslope, damage);
@@ -807,13 +866,13 @@ void A_FireShotgun2(player_t *player, pspdef_t *psp)
 
     for (i = 0; i < 20; i++)
     {
-        int damage = 5 * (P_Random() % 3 + 1);
+        int damage = 5 * (P_Random(__FILE__, __LINE__, __FUNCTION__) % 3 + 1);
         angle_t angle = player->mo->angle;
         // killough 5/5/98: remove dependence on order of evaluation:
-        int t = P_Random();
-        angle += (t - P_Random()) << 19;
-        t = P_Random();
-        P_LineAttack(player->mo, angle, MISSILERANGE, _g->bulletslope + ((t - P_Random()) << 5), damage);
+        int t = P_Random(__FILE__, __LINE__, __FUNCTION__);
+        angle += (t - P_Random(__FILE__, __LINE__, __FUNCTION__)) << 19;
+        t = P_Random(__FILE__, __LINE__, __FUNCTION__);
+        P_LineAttack(player->mo, angle, MISSILERANGE, _g->bulletslope + ((t - P_Random(__FILE__, __LINE__, __FUNCTION__)) << 5), damage);
     }
 }
 
@@ -880,7 +939,7 @@ void A_BFGSpray(mobj_t *mo)
         P_SpawnMobj(_g->linetarget->x, _g->linetarget->y, _g->linetarget->z + (getMobjHeight(_g->linetarget) >> 2), MT_EXTRABFG);
 
         for (damage = j = 0; j < 15; j++)
-            damage += (P_Random() & 7) + 1;
+            damage += (P_Random(__FILE__, __LINE__, __FUNCTION__) & 7) + 1;
 
         P_DamageMobj(_g->linetarget, getTarget(mo), getTarget(mo), damage);
     }

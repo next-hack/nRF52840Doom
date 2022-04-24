@@ -51,7 +51,8 @@
 
 #define DEBUG_SETUP 0
 #if DEBUG_SETUP
-    #define START_MAP 1
+#define AUTOSTART_GAME 0
+    #define START_MAP 7
     #define SHOW_FPS true
 #else
     #define START_MAP 1

@@ -291,7 +291,7 @@ void G_BuildTiccmd(ticcmd_t *cmd)
         newweapon = P_WeaponCycleDown(&_g->player);
         //side += sidemove[speed]; //Hack cancel strafe.
     }
-    else if ((_g->player.attackdown && !P_CheckAmmo(&_g->player)))
+    else if (!demo_compatibility && (_g->player.attackdown && !P_CheckAmmo(&_g->player)))
         newweapon = P_SwitchWeapon(&_g->player);           // phares
     else
     {                                 // phares 02/26/98: Added gamemode checks
@@ -883,7 +883,7 @@ void G_DoWorldDone(void)
 // or savegame. This is used to prevent problems, in
 // case more players in a game are supported later.
 
-#define MIN_MAXPLAYERS 32
+#define MIN_MAXPLAYERS 4
 
 //
 // killough 5/15/98: add forced loadgames, which allow user to override checks
@@ -1237,6 +1237,7 @@ void G_ReadDemoTiccmd(ticcmd_t *cmd)
             cmd->angleturn = (((signed int) (spiFlashGetByteFromAddress(_g->demo_p++))) << 8) + lowbyte;
         }
         cmd->buttons = (unsigned char) spiFlashGetByteFromAddress(_g->demo_p++);
+        demodbgprintf("MR: %02X GT: %d. fm %x, sm %x, at %x, bt %x, X: %x, Y: %x, Mx: %x, My: %x, angle: %x\r\n",_g->prndindex, _g->gametic, cmd->forwardmove, cmd->sidemove, cmd->angleturn, cmd->buttons, _g->player.mo->x, _g->player.mo->y, _g->player.mo->momx, _g->player.mo->momy, _g->player.mo->angle);
     }
 }
 
@@ -1469,7 +1470,8 @@ boolean G_CheckDemoStatus(void)
         int endtime = I_GetTime();
         // killough -- added fps information and made it work for longer demos:
         unsigned realtics = endtime - _g->starttime;
-        I_Error("Timed %u gametics in %u realtics = %-.1f frames per second", (unsigned) _g->gametic, realtics, (unsigned) _g->gametic * (double) TICRATE / realtics);
+        unsigned int fps = (unsigned) _g->gametic * 100 * TICRATE / realtics;
+        printf("Timed %u gametics in %u realtics = %u.%02u frames per second", (unsigned) _g->gametic, realtics, fps / 100, fps % 100);
     }
 
     if (_g->demoplayback)

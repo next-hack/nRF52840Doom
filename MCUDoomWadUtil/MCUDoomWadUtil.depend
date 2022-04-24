@@ -1,0 +1,33 @@
+# depslib dependency file v1.0
+1650461201 source:d:\progettimingw\mcudoomwadutil\main.c
+	<stdio.h>
+	<stdlib.h>
+	"wadfile.h"
+	"wadprocessor.h"
+
+1633257749 d:\progettimingw\mcudoomwadutil\wadfile.h
+	"doomtypes.h"
+	<stdio.h>
+	<stdlib.h>
+	<stdint.h>
+	<stdbool.h>
+
+1633257512 d:\progettimingw\mcudoomwadutil\doomtypes.h
+	<stdint.h>
+	<limits.h>
+
+1633257512 d:\progettimingw\mcudoomwadutil\wadprocessor.h
+	"wadfile.h"
+
+1633257512 source:d:\progettimingw\mcudoomwadutil\wadfile.c
+	"wadfile.h"
+	"doomtypes.h"
+	<string.h>
+
+1650461091 source:d:\progettimingw\mcudoomwadutil\wadprocessor.c
+	"wadprocessor.h"
+	"doomtypes.h"
+	"wadfile.h"
+	<string.h>
+	<ctype.h>
+

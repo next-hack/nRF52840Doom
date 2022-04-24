@@ -266,7 +266,7 @@ void tests(void)
 void main(void)
 {
     // check if voltage is not set to 3.3V
-    if (NRF_UICR->REGOUT0 != UICR_REGOUT0_VOUT_3V3)
+     if (NRF_UICR->REGOUT0 != UICR_REGOUT0_VOUT_3V3)
     {
         NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen << NVMC_CONFIG_WEN_Pos;
         while (NRF_NVMC->READY == NVMC_READY_READY_Busy)

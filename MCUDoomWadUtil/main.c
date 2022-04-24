@@ -14,12 +14,12 @@
 #include <stdlib.h>
 #include "wadfile.h"
 #include "wadprocessor.h"
-
+#define VERSIONSTR "0.3"    // fix for single patch textures.
 int main(int argc, char *argv[])
 {
     wadfile_t wadfile;
     wadfile_t gbawadfile;
-    printf("MCUDoomWadutil by Nicola Wrachien.\r\nOriginal source by doomhack.\r\n");
+    printf("MCUDoomWadutil by Nicola Wrachien V%s.\r\nOriginal source by doomhack.\r\n", VERSIONSTR);
     // process input
     if (argc != 3)
     {

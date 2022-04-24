@@ -77,8 +77,9 @@ boolean P_CheckSight(mobj_t *t1, mobj_t *t2)
     // Check in REJECT table.
 
     if (_g->rejectmatrix[pnum >> 3] & (1 << (pnum & 7))) // can't possibly be connected
+    {
         return false;
-
+    }
     /* killough 11/98: shortcut for melee situations
      * same subsector? obviously visible
      * cph - compatibility optioned for demo sync, cf HR06-UV.LMP */

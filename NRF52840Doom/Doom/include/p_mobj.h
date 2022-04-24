@@ -219,7 +219,8 @@
 
 //#define MF_UNUSED2      (unsigned int)(0x0000000010000000)
 #define MF_DECORATION      (unsigned int)(0x0000000010000000) // next-hack.
-#define MF_STATIC (MF_DECORATION | MF_SPECIAL)				  // next-hack. Objects with this flags go in the static mobj zone, and occupy less RAM
+
+#define MF_STATIC  (MF_DECORATION | MF_SPECIAL)				  // next-hack. Objects with this flags go in the static mobj zone, and occupy less RAM
 
 #define MF_UNUSED3      (unsigned int)(0x0000000020000000)
 
@@ -284,7 +285,8 @@ typedef struct mobj_s
     unsigned short sprev_sptr;
     // a linked list of sectors where this object appears
     // For movement checking.
-    short tics;   // state tic counter
+    short tics:14;   // state tic counter
+    unsigned short lastlook:2;
     uint8_t type;   // less than 255 mobjtypes.
     uint8_t sprite; // used to find patch_t and flip value
     //
@@ -376,7 +378,8 @@ typedef struct static_mobj_s
     unsigned short sprev_sptr;
     // a linked list of sectors where this object appears
     // For movement checking.
-    short tics;   // state tic counter
+    short tics:14;   // state tic counter
+    unsigned short lastlook:2;
     uint8_t type;   // less than 255 mobjtypes.
     // Actually we do not really need a sprite, it is used very seldom
     uint8_t sprite; // used to find patch_t and flip value

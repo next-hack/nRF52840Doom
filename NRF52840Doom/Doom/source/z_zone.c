@@ -84,7 +84,7 @@
 #define CHUNK_SIZE 8
 #define MAX_STATIC_ZONE (113600) // 113600
 #define MEM_ALIGN CHUNK_SIZE
-#define ZMALLOC_STAT
+//#define ZMALLOC_STAT
 
 // End Tunables
 

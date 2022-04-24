@@ -104,7 +104,7 @@ const int startmap = 1;
 
 const boolean nodrawers = false;
 
-static const char *timedemo = NULL; //"demo1";
+static const char *timedemo =  NULL; //"demo1";
 
 /*
  * D_PostEvent - Event handling
@@ -330,6 +330,7 @@ static void D_DoomLoop(void)
             S_UpdateSounds(_g->player.mo); // move positional sounds
         // Update display, next frame, with current state.
         D_Display();
+        #if 0
         if (oldMaxDivisions < divisions)
         {
             oldMaxDivisions = divisions;
@@ -342,16 +343,19 @@ static void D_DoomLoop(void)
             printf("Max lumpByNameRequest per frame increased to %d\r\n", lumpByNameRequest);
 
         }
+        #endif
         if (_g->fps_show)
         {
             D_UpdateFPS();
         }
-#if DEBUG_SETUP
+#if DEBUG_SETUP 
+#if AUTOSTART_GAME
         if (!startedGame)
         {
             startedGame = true;
             G_DeferedInitNew(1, 1, 6);
         }
+#endif
 #endif
     }
 }
@@ -443,7 +447,7 @@ static struct
 
 const demostates[][4] =
 {
-#if 1
+#if 0
     {
         { D_DrawTitle1, "TITLEPIC" },
         { D_DrawTitle1, "TITLEPIC" },
@@ -453,11 +457,12 @@ const demostates[][4] =
 
 #else
     {
-        { G_DeferedPlayDemo, "demo1" },
-        { G_DeferedPlayDemo, "demo1" },
-        { G_DeferedPlayDemo, "demo1" },
-        { G_DeferedPlayDemo, "demo1" },
+        { G_DeferedPlayDemo, "demo3" },
+        { G_DeferedPlayDemo, "demo3" },
+        { G_DeferedPlayDemo, "demo3" },
+        { G_DeferedPlayDemo, "demo3" },
     },
+#if 0
     {
         { D_SetPageName, "TITLEPIC" },
         { D_SetPageName, "TITLEPIC" },
@@ -485,6 +490,7 @@ const demostates[][4] =
         { G_DeferedPlayDemo, "demo3" },
         { G_DeferedPlayDemo, "demo3" },
     },
+    #endif
 #endif
     {
         { NULL, NULL },

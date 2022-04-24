@@ -38,7 +38,7 @@
       debug_register_definition_file="$(ProjectDir)/mdk/nrf52840.svd"
       debug_target_connection="J-Link"
       gcc_entry_point="Reset_Handler"
-      gcc_optimization_level="Level 3"
+      gcc_optimization_level="Level 3 for more speed"
       link_dependent_projects="Yes"
       link_include_standard_libraries="Yes"
       link_linker_script_file="$(ProjectDir)/nrf52840_next_hack_linker_script.ld"
@@ -86,7 +86,7 @@
       Name="Debug"
       arm_long_calls="No"
       arm_unaligned_access="No"
-      gcc_optimization_level="Optimize For Size"
+      gcc_optimization_level="Level 2 for size"
       link_linker_script_file="nrf52840_next_hack_linker_script.ld"
       link_use_linker_script_file="Yes"
       linker_section_placement_file="$(ProjectDir)/flash_placement.xml" />

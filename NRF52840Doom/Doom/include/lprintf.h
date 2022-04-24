@@ -57,6 +57,15 @@ typedef enum /* Logical output levels */
 
 //extern int lprintf(OutputLevels pri, const char *fmt, ...);
 #define lprintf(pri, fmt, ...) printf(fmt, ## __VA_ARGS__)
+#define MIN_DEMO_GAMETIC_TO_PRINT 0
+
+#define DEBUG_DEMO 0
+#if DEBUG_DEMO
+#define demodbgprintf printf
+#else
+#define demodbgprintf(...)
+#endif
+
 /* killough 3/20/98: add const
  * killough 4/25/98: add gcc attributes
  * cphipps 01/11- moved from i_system.h */

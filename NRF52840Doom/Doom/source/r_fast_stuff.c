@@ -2698,7 +2698,7 @@ static visplane_t* new_visplane(unsigned hash)
     {
         allocatedVp++;
         check = Z_Calloc(1, sizeof(visplane_t), PU_LEVEL, NULL);
-        printf("NewVispl. %d\r\n", allocatedVp);
+        //printf("NewVispl. %d\r\n", allocatedVp);
     }
     else
     {
@@ -4585,7 +4585,6 @@ FASTFUN static void R_StoreWallRange(const int start, const int stop)
 //
 // cph - converted to R_RecalcLineFlags. This recalculates all the flags for
 // a line, including closure and texture tiling.
-
 static void R_RecalcLineFlags(void)
 {
     linedata_t *linedata = &_g->linedata[linedef->lineno];
@@ -5606,7 +5605,7 @@ static boolean P_CrossSubsector(int num)
         divline_t divl;
 
         // allready checked other side?
-        if (_g->linedata[linenum].validcount == (_g->validcount & 0xFF))
+        if (_g->linedata[linenum].validcount == (_g->validcount))
             continue;
 
         _g->linedata[linenum].validcount = _g->validcount;
@@ -5738,11 +5737,11 @@ boolean P_SetMobjState(mobj_t *mobj, statenum_t state)
             return false;
         }
         //
-        if (mobj->flags & MF_STATIC)
-        {
-            printf("attempt to set mobjs state on static\r\n");
-            return false;
-        }
+        //if (mobj->flags & MF_STATIC)
+        //{
+        //    printf("attempt to set mobjs state on static\r\n");
+        //    return false;
+        //}
         st = &states[state];
         //mobj->state = st;
         mobj->state_idx = state;
@@ -5828,7 +5827,7 @@ void P_MobjThinker(mobj_t *mobj)
         if (_g->leveltime & 31)
             return;
 
-        if (P_Random() > 4)
+        if (P_Random(__FILE__, __LINE__, __FUNCTION__) > 4)
             return;
 
         P_NightmareRespawn(mobj);

@@ -51,7 +51,7 @@
 #define USERANGE        (64*FRACUNIT)
 #define MELEERANGE      (64*FRACUNIT)
 #define MISSILERANGE    (32*64*FRACUNIT)
-#define LOOKRANGE       (2048*FRACUNIT) // was 768 in GBA
+#define LOOKRANGE       (768*FRACUNIT) // was 768 in GBA
 
 // MAXRADIUS is for precalculated sector block boxes the spider demon
 // is larger, but we do not have any moving sectors nearby

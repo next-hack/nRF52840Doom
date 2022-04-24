@@ -2067,7 +2067,7 @@ void P_PlayerInSpecialSector(player_t *player)
                 // 10/20 unit damage per 31 ticks
             case 4:
                 // 10/20 unit damage plus blinking light (light already spawned)
-                if (!player->powers[pw_ironfeet] || (P_Random() < 5)) // even with suit, take damage
+                if (!player->powers[pw_ironfeet] || (P_Random(__FILE__, __LINE__, __FUNCTION__) < 5)) // even with suit, take damage
                 {
                     if (!(_g->leveltime & 0x1f))
                         P_DamageMobj(player->mo, NULL, NULL, 20);
@@ -2110,7 +2110,7 @@ void P_PlayerInSpecialSector(player_t *player)
                         P_DamageMobj(player->mo, NULL, NULL, 10);
                 break;
             case 3: // 10/20 damage per 31 ticks
-                if (!player->powers[pw_ironfeet] || (P_Random() < 5)) // take damage even with suit
+                if (!player->powers[pw_ironfeet] || (P_Random(__FILE__, __LINE__, __FUNCTION__) < 5)) // take damage even with suit
                 {
                     if (!(_g->leveltime & 0x1f))
                         P_DamageMobj(player->mo, NULL, NULL, 20);
