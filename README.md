@@ -29,10 +29,12 @@
 
 - Cheats implemented.
 
+- NEW: 2022-04-24: Doom1.WAD v1.9 built-in demo support!
+
 **What's missing?**
 - Music.
 
-- Demo playback, due to incompatibility.
+- Demo playback: for now only Doom1.WAD v1.9 built-in demos are supported.
 
 - Need to be debugged.
 
