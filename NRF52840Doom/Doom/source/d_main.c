@@ -447,7 +447,7 @@ static struct
 
 const demostates[][4] =
 {
-#if 0
+#if 1
     {
         { D_DrawTitle1, "TITLEPIC" },
         { D_DrawTitle1, "TITLEPIC" },
