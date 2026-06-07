@@ -128,9 +128,7 @@ void InitDisplayGPIO(void)
     DISPLAY_RES_HIGH();
     delay(50);
 #endif
-#ifdef PIN_DISPLAY_BACKLIGHT
-    GPIO_PORT(PORT_NUM_DISPLAY_BACKLIGHT)->OUTSET = (1 << PIN_DISPLAY_BACKLIGHT);
-#endif
+    SetBacklight(true);
 }
 static void executeDisplayCommands(const uint8_t * cmds)
 {
@@ -298,4 +296,20 @@ void BeginUpdateDisplay()
     NVIC_SetPriority(SPIM3_IRQn, 1);
     // for continuouswriting
     NVIC_EnableIRQ(SPIM3_IRQn);
+}
+
+void SetBacklight(bool on)
+{
+    if (on)
+    {
+#ifdef PIN_DISPLAY_BACKLIGHT
+        GPIO_PORT(PORT_NUM_DISPLAY_BACKLIGHT)->OUTSET = (1 << PIN_DISPLAY_BACKLIGHT);
+#endif
+    }
+    else
+    {
+#ifdef PIN_DISPLAY_BACKLIGHT
+        GPIO_PORT(PORT_NUM_DISPLAY_BACKLIGHT)->OUTCLR = (1 << PIN_DISPLAY_BACKLIGHT);
+#endif
+    }
 }

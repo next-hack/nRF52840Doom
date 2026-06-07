@@ -104,7 +104,6 @@ void M_EndGame(int choice);
 
 void M_ChangeMessages(int choice);
 void M_ChangeAlwaysRun(int choice);
-void M_ChangeGamma(int choice);
 void M_SfxVol(int choice);
 void M_MusicVol(int choice);
 void M_Sound(int choice);

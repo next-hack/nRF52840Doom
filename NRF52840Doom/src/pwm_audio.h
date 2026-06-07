@@ -28,8 +28,15 @@
 #define MAX_CHANNELS 8
 #define AUDIO_BUFFER_LENGTH 1024 // must be a multiple of 4
 #define AUDIO_BUFFER_DELAY 100   // must be a multiple of 4
+
+#if MINEWDONGLE
 #define PIN_AUDIO_OUT 26
 #define PORT_NUM_AUDIO_OUT 0
+#else
+// Adafruit CLUE buzzer/speaker works decently
+#define PIN_AUDIO_OUT 0
+#define PORT_NUM_AUDIO_OUT 1
+#endif
 #define PWM_COUNTER_TOP (16000000 / (4 * 11025))
 #define PPI_CH_AUDIO 1
 #define PWM_REFRESH_RATE 2 // each sample lasts two PWM periods

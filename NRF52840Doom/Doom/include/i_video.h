@@ -69,7 +69,7 @@ void I_FinishUpdateBlock(void);
  * Can call D_PostEvent.
  */
 void I_StartTic(void);
-uint8_t keysDown();
+key_t keysDown();
 /* I_StartFrame
  * Called by D_DoomLoop,
  * called before processing any tics in a frame
@@ -78,6 +78,7 @@ uint8_t keysDown();
  * are performed here (joystick reading).
  * Can call D_PostEvent.
  */
+void handleDisplayBacklightToggle();
 
 void I_StartFrame(void);
 extern uint8_t displayBuffer[96 * SCREENWIDTH_PHYSICAL];

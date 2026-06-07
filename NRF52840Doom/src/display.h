@@ -136,6 +136,7 @@ extern "C"
     void SelectDisplay(void);
     void DisplayWriteData(uint8_t value);
     void initDisplaySpi();
+    void SetBacklight(bool on);
 
 #ifdef __cplusplus
 }

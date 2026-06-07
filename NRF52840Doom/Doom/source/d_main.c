@@ -330,6 +330,9 @@ static void D_DoomLoop(void)
             S_UpdateSounds(_g->player.mo); // move positional sounds
         // Update display, next frame, with current state.
         D_Display();
+        #if !MINEWDONGLE
+        handleDisplayBacklightToggle();
+        #endif
         #if 0
         if (oldMaxDivisions < divisions)
         {

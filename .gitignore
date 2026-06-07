@@ -4,6 +4,9 @@
 # Intermediate stuff
 NRF52840Doom/Output/Debug/Obj
 
+# Ignore wads
+MCUDoomWadUtil/bin/**/*.wad
+
 #segger stuff
 *.emSession
 

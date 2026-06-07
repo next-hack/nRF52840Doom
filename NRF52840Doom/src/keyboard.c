@@ -68,7 +68,7 @@
         GPIO_PORT(PORT_NUM_KEY_ALT),
         GPIO_PORT(PORT_NUM_KEY_FIRE)
     };
-    const uint8_t keys[] = 
+    const key_t keys[] = 
     {
         KEY_UP,
         KEY_DOWN,
@@ -98,10 +98,10 @@ void i2cSendAndWait(uint8_t addr, uint8_t value)
     while(!NRF_TWIM1->EVENTS_STOPPED);
     NRF_TWIM1->EVENTS_STOPPED = 0;
 }
-uint8_t updateI2cKeyboard(uint8_t *keys)
+key_t updateI2cKeyboard(key_t *keys)
 {
   // read old value and start a new read
-    uint8_t k = i2cReadData;
+    key_t k = i2cReadData;
     i2cWriteData[0] = MCP23008_GPIO;
     NRF_TWIM1->TXD.MAXCNT = 1;
     NRF_TWIM1->RXD.MAXCNT = 1;
@@ -142,6 +142,129 @@ void initI2cKeyboard()
     i2cSendAndWait(MCP23008_IODIR, 255);
     // all pull up
     i2cSendAndWait(MCP23008_GPPU, 255);
+}
+#endif
+#if KEYBOARD == I2C_GAMEPAD
+const uint8_t GamepadQTButtonMaskByte1 = (1 << GAMEPADQT_BUTTON_START);
+const uint8_t GamepadQTButtonMaskByte3 = 
+  (1 << GAMEPADQT_BUTTON_A) | (1 << GAMEPADQT_BUTTON_B) | (1 << GAMEPADQT_BUTTON_X) | (1 << GAMEPADQT_BUTTON_Y) | (1 << GAMEPADQT_BUTTON_SELECT);
+const uint8_t GamepadQTButtonMaskFull[4] = {0, GamepadQTButtonMaskByte1, 0, GamepadQTButtonMaskByte3};
+volatile uint8_t xReading[2];
+volatile uint8_t yReading[2];
+volatile uint8_t buttons[4];
+uint8_t lastReadType;
+uint32_t lastReadTime;
+uint8_t i2cWriteData[6]; // max msg size is 2+4
+void i2cSendAndWait(uint8_t regHigh, uint8_t regLow, const uint8_t *buf, uint8_t num)
+{
+    NRF_TWIM1->EVENTS_STOPPED = 0;
+    NRF_TWIM1->SHORTS = TWIM_SHORTS_LASTTX_STOP_Msk;
+    i2cWriteData[0] = regHigh;
+    i2cWriteData[1] = regLow;
+    for (int i = 0; i < num; i++)
+    {
+        i2cWriteData[2 + i] = buf[i];
+    }
+    NRF_TWIM1->TXD.PTR = (uint32_t) i2cWriteData;
+    NRF_TWIM1->TXD.MAXCNT = 2 + num;
+    NRF_TWIM1->RXD.MAXCNT = 0;
+    NRF_TWIM1->TASKS_STARTTX = 1;
+    // now wait till configuration has been sent
+    while(!NRF_TWIM1->EVENTS_STOPPED);
+    NRF_TWIM1->EVENTS_STOPPED = 0;
+}
+void i2cRead(uint8_t regHigh, uint8_t regLow, volatile uint8_t *buf, uint8_t num)
+{
+    i2cWriteData[0] = regHigh;
+    i2cWriteData[1] = regLow;
+    NRF_TWIM1->TXD.MAXCNT = 2;
+    NRF_TWIM1->RXD.MAXCNT = num;
+    NRF_TWIM1->TXD.PTR = (uint32_t) i2cWriteData;
+    NRF_TWIM1->RXD.PTR = (uint32_t) buf;
+
+    NRF_TWIM1->SHORTS = (TWIM_SHORTS_LASTTX_STARTRX_Enabled << TWIM_SHORTS_LASTTX_STARTRX_Pos)  
+                      | (TWIM_SHORTS_LASTRX_STOP_Enabled << TWIM_SHORTS_LASTRX_STOP_Pos);
+    NRF_TWIM1->TASKS_STARTTX = 1;
+}
+key_t updateI2cGamepad(key_t *keys)
+{
+    const uint16_t sensitivity = 50;
+
+    // rate limit I2C reads, then continually just read from the buffers that will be updated async by TWIM
+    if (NRF_TIMER3->CC[0] - lastReadTime > 250) { // us delay
+      switch (lastReadType) {
+        case 0: i2cRead(SEESAW_GPIO_BASE, SEESAW_GPIO_BULK, buttons, 4); break;
+        case 1: i2cRead(SEESAW_ADC_BASE, SEESAW_ADC_CHANNEL_OFFSET + GAMEPADQT_JOYSTICK_X, xReading, 2); break;
+        case 2: i2cRead(SEESAW_ADC_BASE, SEESAW_ADC_CHANNEL_OFFSET + GAMEPADQT_JOYSTICK_Y, yReading, 2); break;
+      }
+
+      lastReadTime = NRF_TIMER3->CC[0];
+      lastReadType = (lastReadType + 1) % 3;
+    }
+
+    // read start button from byte 1 into upper byte of keys
+    *keys = ((key_t)(~buttons[1] & GamepadQTButtonMaskByte1)) << 8;
+
+    // read rest of buttons from byte 3 into lower byte of keys
+    *keys |= (key_t)(~buttons[3] & GamepadQTButtonMaskByte3);
+
+    // convert analog readings to digital input
+    uint16_t x = (xReading[0] << 8) | xReading[1];
+    if (x <= 1024) {
+      *keys |= (x > (512 + sensitivity)) ? KEY_LEFT : 0;
+      *keys |= (x < (512 - sensitivity)) ? KEY_RIGHT : 0;
+    }
+
+    uint16_t y = (yReading[0] << 8) | yReading[1];
+    if (y <= 1024) {
+      *keys |= (y < (512 - sensitivity)) ? KEY_UP : 0;
+      *keys |= ( y > (512 + sensitivity)) ? KEY_DOWN : 0;
+    }
+}
+void initI2cGamepad()
+{
+    // configure GPIO as open drain
+    GPIO_PORT(PORT_NUM_I2C_SCL)->PIN_CNF[PIN_NUM_I2C_SCL] =
+        (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos) | (GPIO_PIN_CNF_DRIVE_S0D1 << GPIO_PIN_CNF_DRIVE_Pos) |
+        (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos) | (GPIO_PIN_CNF_PULL_Disabled << GPIO_PIN_CNF_PULL_Pos) |
+        (GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos);
+    GPIO_PORT(PORT_NUM_I2C_SDA)->PIN_CNF[PIN_NUM_I2C_SDA] =
+        (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos) | (GPIO_PIN_CNF_DRIVE_S0D1 << GPIO_PIN_CNF_DRIVE_Pos) |
+        (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos) | (GPIO_PIN_CNF_PULL_Disabled << GPIO_PIN_CNF_PULL_Pos) |
+        (GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos);
+    // configure I2C PIN
+    NRF_TWIM1->PSEL.SCL = (TWIM_PSEL_SCL_CONNECT_Connected << TWIM_PSEL_SCL_CONNECT_Pos) | (PIN_NUM_I2C_SCL << TWIM_PSEL_SCL_PIN_Pos) |
+                          (PORT_NUM_I2C_SCL << TWIM_PSEL_SCL_PORT_Pos);
+    NRF_TWIM1->PSEL.SDA = (TWIM_PSEL_SDA_CONNECT_Connected << TWIM_PSEL_SDA_CONNECT_Pos) | (PIN_NUM_I2C_SDA << TWIM_PSEL_SDA_PIN_Pos) |
+                          (PORT_NUM_I2C_SDA << TWIM_PSEL_SDA_PORT_Pos);
+
+    NRF_TWIM1->ADDRESS = SEESAW_I2C_ADDRESS;
+
+    //
+    NRF_TWIM1->FREQUENCY = TWIM_FREQUENCY_FREQUENCY_K250 << TWIM_FREQUENCY_FREQUENCY_Pos;
+    NRF_TWIM1->TXD.LIST = TWIM_TXD_LIST_LIST_ArrayList << TWIM_TXD_LIST_LIST_Pos;
+    NRF_TWIM1->RXD.LIST = TWIM_RXD_LIST_LIST_ArrayList << TWIM_RXD_LIST_LIST_Pos;
+    NRF_TWIM1->ENABLE = TWIM_ENABLE_ENABLE_Enabled << TWIM_ENABLE_ENABLE_Pos;
+
+    // configure gamepad QT
+    //i2cReadAndWait(SEESAW_STATUS_BASE, SEESAW_STATUS_HW_ID)
+    //i2cReadAndWait(SEESAW_STATUS_BASE, SEESAW_STATUS_VERSION)
+    i2cSendAndWait(SEESAW_GPIO_BASE, SEESAW_GPIO_DIRCLR_BULK, GamepadQTButtonMaskFull, 4);
+    i2cSendAndWait(SEESAW_GPIO_BASE, SEESAW_GPIO_PULLENSET, GamepadQTButtonMaskFull, 4);
+    i2cSendAndWait(SEESAW_GPIO_BASE, SEESAW_GPIO_BULK_SET, GamepadQTButtonMaskFull, 4);
+    i2cSendAndWait(SEESAW_GPIO_BASE, SEESAW_GPIO_INTENSET, GamepadQTButtonMaskFull, 4);
+
+
+    lastReadTime = NRF_TIMER3->CC[0];
+    lastReadType = (lastReadTime + 1) % 3;
+
+    // initiate readings for all input
+    i2cRead(SEESAW_GPIO_BASE, SEESAW_GPIO_BULK, buttons, 4);
+    delay(5);
+    i2cRead(SEESAW_ADC_BASE, SEESAW_ADC_CHANNEL_OFFSET + GAMEPADQT_JOYSTICK_X, xReading, 2);
+    delay(5);
+    i2cRead(SEESAW_ADC_BASE, SEESAW_ADC_CHANNEL_OFFSET + GAMEPADQT_JOYSTICK_Y, yReading, 2);
+    delay(500);
 }
 #endif
 #if KEYBOARD == PARALLEL_KEYBOARD
@@ -199,14 +322,14 @@ void initRadioKeyboard()
     // the keyboard must receive also audio packet. Let's set.
     initWirelessAudio();
 }
-void updateRadioKeyboard(uint8_t * keys)
+void updateRadioKeyboard(key_t * keys)
 {
     // ok guys, the CRC is completely broken in NRF52xxx devices.
     //  I am not checking it, and I rely only on the address matching
     // if (NRF_RADIO->EVENTS_CRCOK)     // update only if CRC was ok.
     {
         // crc does not work properly so let's add a simple integrity check
-        if ((uint8_t)radioKeys[0] == (uint8_t)(~radioKeys[1]))
+        if ((key_t)radioKeys[0] == (key_t)(~radioKeys[1]))
         {
             *keys = radioKeys[0];
         }
@@ -282,6 +405,8 @@ void initKeyboard()
     initParallelKeyboard()
 #elif KEYBOARD == I2C_KEYBOARD
     initI2cKeyboard();
+#elif KEYBOARD == I2C_GAMEPAD
+    initI2cGamepad();
 #elif KEYBOARD == RADIO_KEYBOARD
     initRadioKeyboard();
 #else
@@ -289,10 +414,10 @@ void initKeyboard()
 #endif
 }
 
-void getKeys(uint8_t * keys)
+void getKeys(key_t * keys)
 {
 #if KEYBOARD == PARALLEL_KEYBOARD
-    uint8_t buttons = 0;
+    key_t buttons = 0;
     for (int i = 0; i < 8; i++)
     {
         uint32_t pressed = !(ports[i]->IN & (1 << pins[i]));
@@ -304,6 +429,8 @@ void getKeys(uint8_t * keys)
     *keys = buttons;
 #elif KEYBOARD == I2C_KEYBOARD
     updateI2cKeyboard(keys);
+#elif KEYBOARD == I2C_GAMEPAD
+    updateI2cGamepad(keys);
 #elif KEYBOARD == RADIO_KEYBOARD
     updateRadioKeyboard(keys);
 #else

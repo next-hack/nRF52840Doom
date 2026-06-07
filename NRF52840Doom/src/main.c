@@ -306,6 +306,17 @@ void main(void)
 #if MINEWDONGLE && DEBUG_MINEGW
     enableUsb();
 #endif
+#if !MINEWDONGLE
+    // configure Clue onboard button pins as input pullups
+    GPIO_PORT(PORT_NUM_BTN_A)->PIN_CNF[PIN_NUM_BTN_A] =
+       (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos) | (GPIO_PIN_CNF_DRIVE_S0S1 << GPIO_PIN_CNF_DRIVE_Pos) |
+       (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos) | (GPIO_PIN_CNF_PULL_Pullup << GPIO_PIN_CNF_PULL_Pos) |
+       (GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos);
+    GPIO_PORT(PORT_NUM_BTN_B)->PIN_CNF[PIN_NUM_BTN_B] =
+       (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos) | (GPIO_PIN_CNF_DRIVE_S0S1 << GPIO_PIN_CNF_DRIVE_Pos) |
+       (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos) | (GPIO_PIN_CNF_PULL_Pullup << GPIO_PIN_CNF_PULL_Pos) |
+       (GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos);
+#endif
 #if KEYBOARD == RADIO_KEYBOARD
     displayPrintln(1, "Turn on the radio gamepad!");
 #endif
@@ -360,7 +371,7 @@ void main(void)
     printf("Device ID: %x%x\r\n", NRF_FICR->DEVICEID[0], NRF_FICR->DEVICEID[1]);
     //
     //
-    uint8_t c = 0;
+    key_t c = 0;
     getKeys(&c);
 
     displayPrintln(1, "Key Pressed: %x", c);

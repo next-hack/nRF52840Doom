@@ -39,7 +39,7 @@
 #include "graphics.h"
 
 // 1: BLE DONGLE, 0 = ADAFRUIT CLUE
-#define MINEWDONGLE 1
+#define MINEWDONGLE 0
 #define DEBUG_OUT_PRINTF 0
 //various configurations
 #define CACHE_ALL_COLORMAP_TO_RAM 0 // this wastes 8.25 more kB, and typically 900 us are saved. Remember to reduce zone memory!
@@ -72,6 +72,7 @@
 #define I2C_KEYBOARD 1
 #define PARALLEL_KEYBOARD 2
 #define RADIO_KEYBOARD 3
+#define I2C_GAMEPAD 4
 //
 #define PIN_TXD        (5)
 #define PIN_RXD        (4)
@@ -85,9 +86,23 @@
 #else
     #define ADAFRUIT_CLUE_DISPLAY 1
     #define EXTERNAL_CLUE_FLASH 0
-    #define INTERNAL_CLUE_FLASH (1 - EXTERNAL_CLUE_FLASH )
-    #define KEYBOARD RADIO_KEYBOARD 
+    #define INTERNAL_CLUE_FLASH (1 - EXTERNAL_CLUE_FLASH)
+    #define KEYBOARD I2C_GAMEPAD 
+
+    // onboard clue buttons
+    #define PORT_NUM_BTN_A P1
+    #define PORT_NUM_BTN_B P1
+
+    #define PIN_NUM_BTN_A 2
+    #define PIN_NUM_BTN_B 10
 #endif
+
+#if KEYBOARD == I2C_GAMEPAD
+    typedef uint16_t key_t;
+#else
+    typedef uint8_t key_t;
+#endif
+
 #if KEYBOARD == I2C_KEYBOARD
     #if MINEWDONGLE
         #error Only radio keyboard can be used with the dongle!
@@ -111,6 +126,46 @@
     #define MCP23008_INTCAP 8
     #define MCP23008_GPIO 9
     #define MCP23008_OLAT 10
+#endif
+#if KEYBOARD == I2C_GAMEPAD
+    #if MINEWDONGLE
+        #error Only radio keyboard can be used with the dongle!
+    #endif
+    #define SEESAW_I2C_ADDRESS 0x50            // for gamepad
+    #define SEESAW_GAMEPAD_VERSION 5743
+
+    #define PORT_NUM_I2C_SCL P0
+    #define PORT_NUM_I2C_SDA P0
+
+    #define PIN_NUM_I2C_SCL 25
+    #define PIN_NUM_I2C_SDA 24
+
+    // Module base addresses
+    #define SEESAW_STATUS_BASE 0x00
+    #define SEESAW_GPIO_BASE 0x01
+    #define SEESAW_ADC_BASE 0x09
+    // GPIO module function address registers
+    #define SEESAW_GPIO_DIRCLR_BULK 0x03
+    #define SEESAW_GPIO_BULK 0x04
+    #define SEESAW_GPIO_BULK_SET 0x05
+    #define SEESAW_GPIO_INTENSET 0x08
+    #define SEESAW_GPIO_PULLENSET 0x0B
+    // status module function address registers
+    #define SEESAW_STATUS_HW_ID 0x01
+    #define SEESAW_STATUS_VERSION 0x02
+    // ADC module function address registers
+    #define SEESAW_ADC_CHANNEL_OFFSET 0x07
+    // Gamepad QT seesaw joystick pins
+    #define GAMEPADQT_JOYSTICK_X      14
+    #define GAMEPADQT_JOYSTICK_Y      15
+    // Gamepad WT seesaw button bitmask offsets
+    #define GAMEPADQT_BUTTON_X         6
+    #define GAMEPADQT_BUTTON_Y         2
+    #define GAMEPADQT_BUTTON_A         5
+    #define GAMEPADQT_BUTTON_B         1
+    #define GAMEPADQT_BUTTON_SELECT    0
+    #define GAMEPADQT_BUTTON_START     0 // actually bit 16 but using uint8t[] over uint32_t, so is bit 0 of byte 1 while rest of buttons are in byte 3
+
 #endif
 #if INTERNAL_CLUE_FLASH 
     // port config for QSPI
@@ -260,6 +315,13 @@ static inline void nh_disable_irq()
     // guess what? can't suspend SPIM3 because it is bugged.
     while(displayData.dmaBusy);
     __disable_irq();
+}
+#else
+static inline void nh_enable_irq()
+{
+}
+static inline void nh_disable_irq()
+{
 }
 #endif
 

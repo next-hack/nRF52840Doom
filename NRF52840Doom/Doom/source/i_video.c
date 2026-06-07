@@ -68,6 +68,7 @@
 #include "d_event.h"
 #include "i_video.h"
 #include "i_sound.h"
+#include "m_menu.h"
 #include "z_zone.h"
 #include "s_sound.h"
 #include "sounds.h"
@@ -84,10 +85,11 @@
 #define NO_PALETTE_CHANGE 255
 
 uint16_t palette[256];
+bool toggleBacklight = false;
 
-uint8_t keysDown()
+key_t keysDown()
 {
-  uint8_t buttons = 0;
+  key_t buttons = 0;
   getKeys(&buttons);
   return buttons;
 }
@@ -98,7 +100,7 @@ void I_StartTic(void)
 {
     static uint16_t oldGameKeyState = 0;
     // get which keys are currently pressed
-    uint8_t hwKeyState = keysDown();
+    key_t hwKeyState = keysDown();
     // translate between the hardware key state and the game key state
     uint16_t gameKeyState = 0;
 
@@ -109,7 +111,13 @@ void I_StartTic(void)
         if (hwKeyState & KEY_LEFT)
             gameKeyState |= 1 << KEYD_SL;
         if (hwKeyState & KEY_USE)
+#if KEYBOARD == I2C_GAMEPAD
+            // USE negates always run setting, so with a dedicated MENU key the USE button
+            // can be freed from the ALT combo allowing it to be dual-purpose USE and SPEED button
+            gameKeyState |= 1 << KEYD_USE;
+#else
             gameKeyState |= 1 << KEYD_MENU;
+#endif
         if (hwKeyState & KEY_CHGW)
             gameKeyState |= 1 << KEYD_CHGWDOWN;
 #if OLD_KEYMAP // it was not wise setting ALT with fire to trigger automap...
@@ -128,20 +136,37 @@ void I_StartTic(void)
             gameKeyState |= 1 << KEYD_RIGHT;
         if (hwKeyState & KEY_LEFT)
             gameKeyState |= 1 << KEYD_LEFT;
-        if (hwKeyState & KEY_USE)
-            gameKeyState |= 1 << KEYD_USE;
-        if (hwKeyState & KEY_CHGW)
-            gameKeyState |= 1 << KEYD_CHGW;
         if (hwKeyState & KEY_FIRE)
             gameKeyState |= 1 << KEYD_FIRE;
+#if KEYBOARD == I2C_GAMEPAD
+        // remap USE+CHGW from MAP1 in other keymaps to CHGWDOWN
+        if ((hwKeyState & (KEY_USE | KEY_CHGW)) == (KEY_USE | KEY_CHGW))
+            gameKeyState |= 1 << KEYD_CHGWDOWN;
+        else
+        {
+#endif
+            if (hwKeyState & KEY_USE)
+                gameKeyState |= 1 << KEYD_USE;
+            if (hwKeyState & KEY_CHGW)
+                gameKeyState |= 1 << KEYD_CHGW;
+#if KEYBOARD == I2C_GAMEPAD
+        }
+#endif
     }
 
     if (hwKeyState & KEY_UP)
         gameKeyState |= 1 << KEYD_UP;
     if (hwKeyState & KEY_DOWN)
         gameKeyState |= 1 << KEYD_DOWN;
- #if !OLD_KEYMAP
-    // automap is now enabled when use and change weapon are pressed at the same time. 
+#if KEYBOARD == I2C_GAMEPAD
+    // Gamepad has 10 total buttons, with extra byte for key data can have MAP1 and MENU as dedicated buttons
+    if (hwKeyState & KEY_MAP)
+        gameKeyState |= 1 << KEYD_MAP1;
+    if (hwKeyState & KEY_MENU)
+        gameKeyState |= 1 << KEYD_MENU;
+#endif
+#if !OLD_KEYMAP && KEYBOARD != I2C_GAMEPAD
+    // automap is now enabled when use and change weapon are pressed at the same time (or chgwdown for i2c gamepad)
     if ((hwKeyState & (KEY_USE | KEY_CHGW)) == (KEY_USE | KEY_CHGW))
         gameKeyState |= 1 << KEYD_MAP1;
 #endif
@@ -168,6 +193,24 @@ void I_StartTic(void)
         }
     }
     oldGameKeyState = gameKeyState;
+
+#if !MINEWDONGLE
+    // handle onboard clue buttons for gamma adjust and toggling backlight
+    static bool aBtnWasDown = false;
+    static bool bBtnWasDown = false;
+    bool aDown = !(GPIO_PORT(PORT_NUM_BTN_A)->IN & (1 << PIN_NUM_BTN_A));
+    bool bDown = !(GPIO_PORT(PORT_NUM_BTN_B)->IN & (1 << PIN_NUM_BTN_B));
+
+    if (aDown && bDown && (!aBtnWasDown || !bBtnWasDown))
+      toggleBacklight = true;
+    else if (aDown && !aBtnWasDown)
+        M_ChangeGamma(0);
+    else if (bDown && !bBtnWasDown)
+        M_ChangeGamma(1);
+
+    aBtnWasDown = aDown;
+    bBtnWasDown = bDown;
+#endif
 }
 
 boolean I_StartDisplay(void)
@@ -236,3 +279,13 @@ void I_SetPalette(int pal)
     _g->newpal = pal;
 }
 
+void handleDisplayBacklightToggle() {
+    static bool backlightOn = true;
+
+    if (toggleBacklight)
+    {
+        toggleBacklight = false;
+        backlightOn = !backlightOn;
+        SetBacklight(backlightOn);
+    }
+}

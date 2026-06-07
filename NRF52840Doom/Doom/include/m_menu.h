@@ -82,6 +82,8 @@ void M_ResetMenu(void);      // killough 11/98: reset main menu ordering
 
 void M_DrawCredits(void);    // killough 11/98
 
+void M_ChangeGamma(int choice); // Adafruit Clue onboard button gamma adjust
+
 /****************************
  *
  *  The following #defines are for the m_flags field of each item on every
